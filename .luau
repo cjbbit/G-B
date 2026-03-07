@@ -758,7 +758,7 @@ do
     
     _G.LowEndMode = false
     
-    _G.ZentraPerf = {
+    _G.VelionPerf = {
         -- Timestamps of last activity for each feature
         lastActivity = {},
         -- Whether each feature is currently active (not dormant)
@@ -774,65 +774,65 @@ do
     }
     
     -- Toggle low-end mode
-    function _G.ZentraPerf.setLowEndMode(enabled)
-        _G.ZentraPerf.lowEndMode = enabled
+    function _G.VelionPerf.setLowEndMode(enabled)
+        _G.VelionPerf.lowEndMode = enabled
         if enabled then
-            _G.ZentraPerf.lowEndMultiplier = 3 -- More aggressive throttling
+            _G.VelionPerf.lowEndMultiplier = 3 -- More aggressive throttling
         else
-            _G.ZentraPerf.lowEndMultiplier = 1
+            _G.VelionPerf.lowEndMultiplier = 1
         end
     end
     
     -- Get effective skip count based on device mode
-    function _G.ZentraPerf.getSkipCount(baseSkip)
-        if _G.ZentraPerf.lowEndMode then
-            return math.floor(baseSkip * _G.ZentraPerf.lowEndMultiplier)
+    function _G.VelionPerf.getSkipCount(baseSkip)
+        if _G.VelionPerf.lowEndMode then
+            return math.floor(baseSkip * _G.VelionPerf.lowEndMultiplier)
         end
         return baseSkip
     end
     
     -- Mark a feature as active (call when toggle is enabled or used)
-    function _G.ZentraPerf.markActive(featureName)
-        _G.ZentraPerf.lastActivity[featureName] = os.clock()
-        _G.ZentraPerf.isActive[featureName] = true
+    function _G.VelionPerf.markActive(featureName)
+        _G.VelionPerf.lastActivity[featureName] = os.clock()
+        _G.VelionPerf.isActive[featureName] = true
     end
     
     -- Check if a feature should run (returns false if dormant)
-    function _G.ZentraPerf.shouldRun(featureName)
-        local lastTime = _G.ZentraPerf.lastActivity[featureName]
+    function _G.VelionPerf.shouldRun(featureName)
+        local lastTime = _G.VelionPerf.lastActivity[featureName]
         if not lastTime then return false end
         if os.clock() - lastTime > DORMANT_TIMEOUT then
-            _G.ZentraPerf.isActive[featureName] = false
+            _G.VelionPerf.isActive[featureName] = false
             return false
         end
         return true
     end
     
     -- Throttle check - returns true if this frame should process
-    function _G.ZentraPerf.shouldProcess(featureName, skipCount)
-        skipCount = _G.ZentraPerf.getSkipCount(skipCount or FRAME_SKIP_LIGHT)
-        _G.ZentraPerf.frameCounters[featureName] = (_G.ZentraPerf.frameCounters[featureName] or 0) + 1
-        if _G.ZentraPerf.frameCounters[featureName] >= skipCount then
-            _G.ZentraPerf.frameCounters[featureName] = 0
+    function _G.VelionPerf.shouldProcess(featureName, skipCount)
+        skipCount = _G.VelionPerf.getSkipCount(skipCount or FRAME_SKIP_LIGHT)
+        _G.VelionPerf.frameCounters[featureName] = (_G.VelionPerf.frameCounters[featureName] or 0) + 1
+        if _G.VelionPerf.frameCounters[featureName] >= skipCount then
+            _G.VelionPerf.frameCounters[featureName] = 0
             return true
         end
         return false
     end
     
     -- Combined check: is active AND should process this frame
-    function _G.ZentraPerf.canProcess(featureName, skipCount)
-        if not _G.ZentraPerf.shouldRun(featureName) then return false end
-        return _G.ZentraPerf.shouldProcess(featureName, skipCount)
+    function _G.VelionPerf.canProcess(featureName, skipCount)
+        if not _G.VelionPerf.shouldRun(featureName) then return false end
+        return _G.VelionPerf.shouldProcess(featureName, skipCount)
     end
     
     -- Disable a feature (mark as dormant)
-    function _G.ZentraPerf.disable(featureName)
-        _G.ZentraPerf.isActive[featureName] = false
-        _G.ZentraPerf.lastActivity[featureName] = nil
+    function _G.VelionPerf.disable(featureName)
+        _G.VelionPerf.isActive[featureName] = false
+        _G.VelionPerf.lastActivity[featureName] = nil
     end
     
     -- Constants for feature names (avoid typos)
-    _G.ZentraPerf.FEATURES = {
+    _G.VelionPerf.FEATURES = {
         ESP = "ESP",
         KILL_AURA = "KillAura",
         SILENT_AIM = "SilentAim",
@@ -856,7 +856,7 @@ end
 -- ===== END PERFORMANCE OPTIMIZATION SYSTEM =====
 
 --[[
-    Zentra Hub - Guts & BlackPowder
+    Velion Hub - Guts & BlackPowder
     Made by oapboyz
     Professional WindUI Version
 ]]--
@@ -883,7 +883,7 @@ do -- // Loader + UI + Dashboard
     end)
     
     if not windSuccess or not WindUI then
-        warn("[Zentra Hub] Failed to load WindUI: " .. tostring(windError or "WindUI returned nil"))
+        warn("[Velion Hub] Failed to load WindUI: " .. tostring(windError or "WindUI returned nil"))
         return
     end
     
@@ -1037,20 +1037,20 @@ do
 end
 -- ===== end platoboost service
 
-local ZENTRA_LOGO_URL = "https://raw.githubusercontent.com/oapDev/Just-png/refs/heads/main/1772764381560.png"
+local ZENTRA_LOGO_URL = "https://raw.githubusercontent.com/Cannifin/just-png/refs/heads/main/vh_transparent%20(1).png"
 
 -- Streamer Mode uses _G.StreamerMode set outside this script
 -- Example: _G.StreamerMode = true before running this script
 streamerModeEnabled = _G.StreamerMode == true
 
 local Window = WindUI:CreateWindow({
-    Title = "Zentra Hub",
+    Title = "Velion Hub",
     Author = "by oapboyz",
-    Folder = "ZentraHub/GutsBlackPowder",
+    Folder = "VelionHub/GutsBlackPowder",
     Transparent = true,
     HideSearchBar = false,
     ScrollBarEnabled = true,
-    Theme = "Dark",
+    Theme = "Emerald",
     Icon = ZENTRA_LOGO_URL,
     User = {
         Enabled = false,
@@ -1067,9 +1067,9 @@ local Window = WindUI:CreateWindow({
             if playerGui then
                 for _, child in ipairs(playerGui:GetChildren()) do
                     if child:IsA("ScreenGui") then
-                        -- Rename any WindUI or Zentra-related GUIs to stealth names
+                        -- Rename any WindUI or Velion-related GUIs to stealth names
                         local lowerName = child.Name:lower()
-                        if lowerName:find("wind") or lowerName:find("zentra") or lowerName:find("hub") then
+                        if lowerName:find("wind") or lowerName:find("velion") or lowerName:find("hub") then
                             child.Name = stealthNames[math.random(1, #stealthNames)] .. "_" .. math.random(10000, 99999)
                         end
                     end
@@ -1081,7 +1081,7 @@ local Window = WindUI:CreateWindow({
                 for _, child in ipairs(coreGui:GetChildren()) do
                     if child:IsA("ScreenGui") then
                         local lowerName = child.Name:lower()
-                        if lowerName:find("wind") or lowerName:find("zentra") or lowerName:find("hub") or lowerName:find("aimlock") then
+                        if lowerName:find("wind") or lowerName:find("velion") or lowerName:find("hub") or lowerName:find("aimlock") then
                             child.Name = stealthNames[math.random(1, #stealthNames)] .. "_" .. math.random(10000, 99999)
                         end
                     end
@@ -1096,7 +1096,7 @@ local Window = WindUI:CreateWindow({
     Window:SetToggleKey(Enum.KeyCode.RightShift)
 
     local button = Window:EditOpenButton({
-        Title = "Zentra Hub",
+        Title = "Velion Hub",
         Icon = ZENTRA_LOGO_URL,
         Size = UDim2.new(0, 140, 0, 40),
         CornerRadius = UDim.new(0, 10),
@@ -1143,7 +1143,7 @@ local Window = WindUI:CreateWindow({
     Window:SetIconSize(48)
     Window:Tag({
         Title = "Guts & BlackPowder",
-        Color = Color3.fromHex("#A5D8FF")
+        Color = Color3.fromHex("#2ECC71")
     })
 
     local DashboardTab = Window:Tab({ Title = "Dashboard", Icon = "layout-dashboard" })
@@ -1163,28 +1163,28 @@ local Window = WindUI:CreateWindow({
     })
 
     InfoSection:Paragraph({
-        Title = "Zentra Hub v1.0",
-        Desc = "Guts & BlackPowder Script\nMade by oapboyz\nExecutor: "..(identifyexecutor and identifyexecutor() or "Unknown"),
+        Title = "Velion Hub v1.0",
+        Desc = "Guts & BlackPowder | Made by oapboyz\nExecutor: "..(identifyexecutor and identifyexecutor() or "Unknown"),
     })
 
     InfoSection:Paragraph({
         Title = "Changelogs",
-        Desc = "Guess and see",
+        Desc = "New updates — figure it out yourself.",
     })
 
 -- Make sure this exists somewhere near the top of your script
 local HttpService = game:GetService("HttpService")
 
 -- Discord constants
-local discordInvite = "https://discord.gg/TugMt8H7kr"
-local widgetUrl = "https://discord.com/api/guilds/1456974184336064594/widget.json"
+local discordInvite = "https://discord.gg/dhTBN7FG6k"
+local widgetUrl = "https://discord.com/api/guilds/1479535636997476484/widget.json"
 
 -- Main Discord card
 local DiscordCard = DiscordSection:Paragraph({
-    Title = "Zentra Hub",
+    Title = "Velion Hub",
     Desc  = "🟢 Loading...\n👥 Loading...",
 
-    Image = "https://raw.githubusercontent.com/oapDev/Just-png/refs/heads/main/1772784040933.png",
+    Image = "https://raw.githubusercontent.com/Cannifin/just-png/refs/heads/main/unnamed.jpg",
     ImageSize = 48,
 
     Buttons = {
@@ -1230,7 +1230,7 @@ local function updateDiscordCard()
 
     -- Also try the invite API for approximate member count
     local ok2, body2 = pcall(function()
-        return game:HttpGet("https://discord.com/api/v9/invites/TugMt8H7kr?with_counts=true")
+        return game:HttpGet("https://discord.com/api/v9/invites/dhTBN7FG6k?with_counts=true")
     end)
     if ok2 and body2 then
         local okDecode2, data2 = pcall(function()
@@ -1244,9 +1244,8 @@ local function updateDiscordCard()
 
     local line1 = string.format("🟢 %d Online", online)
     local line2 = string.format("👥 %d Members", members)
-    local line3 = "discord.gg/TugMt8H7kr"
 
-    DiscordCard:SetDesc(line1 .. "\n" .. line2 .. "\n" .. line3)
+    DiscordCard:SetDesc(line1 .. "\n" .. line2)
 end
 
 task.defer(function()
@@ -1259,7 +1258,7 @@ end)
 end
 
 -- ===== GLOBAL TOGGLE REGISTRY FOR KEYBINDS =====
-_G.ZentraToggles = _G.ZentraToggles or {}
+_G.VelionToggles = _G.VelionToggles or {}
 
 -- ===== 7 MAIN TABS =====
 local CombatTab  = Window:Tab({ Title = "Combat",  Icon = "sword" })
@@ -1662,7 +1661,7 @@ end
 local HeadHitToggle = AimingSection:Toggle({
     Title = "Head Lock",
     Flag = "Aiming_HeadHit",
-    Desc = "Forces Attacks To Redirect to the zombies Head.",
+    Desc = "Redirects all attacks to zombie heads.",
     Default = HeadHitEnabled,
     Callback = function(value)
         -- reflect UI intent immediately
@@ -1710,8 +1709,8 @@ local HeadHitToggle = AimingSection:Toggle({
 })
 
 -- Store toggle reference globally for keybind access
-_G.ZentraToggleElements = _G.ZentraToggleElements or {}
-_G.ZentraToggleElements.HeadHit = HeadHitToggle
+_G.VelionToggleElements = _G.VelionToggleElements or {}
+_G.VelionToggleElements.HeadHit = HeadHitToggle
 
 -- If any require previously failed, lock & notify immediately (module existed but require errored)
 if FlintLockRequireFailed or MeleeBaseRequireFailed then
@@ -1719,7 +1718,7 @@ if FlintLockRequireFailed or MeleeBaseRequireFailed then
 end
 
 -- Register HeadHit toggle for keybind access
-_G.ZentraToggles.HeadHit = {
+_G.VelionToggles.HeadHit = {
     element = HeadHitToggle,
     getState = function() return HeadHitEnabled end,
     setState = function(v) HeadHitEnabled = v end
@@ -1903,7 +1902,7 @@ _G.ZentraToggles.HeadHit = {
     local AutoJumpToggle = LegitSection:Toggle({            
         Title = "Auto Jump",            
         Flag = "Legit_AutoJump",
-        Desc = "Makes you jump When Thrusting Your Weapon",            
+        Desc = "Auto jump while thrusting.",            
         Default = false,            
         Callback = function(value)            
             pcall(function() LocalPlayer:SetAttribute("AutoJumpEnabled", value) end)
@@ -1926,14 +1925,14 @@ _G.ZentraToggles.HeadHit = {
             end            
         end            
     })
-    _G.ZentraToggleElements = _G.ZentraToggleElements or {}
-    _G.ZentraToggleElements.AutoJump = AutoJumpToggle
+    _G.VelionToggleElements = _G.VelionToggleElements or {}
+    _G.VelionToggleElements.AutoJump = AutoJumpToggle
 
     -- Jump Height Slider
     LegitSection:Slider({
         Title = "Jump Height",
         Flag = "Legit_JumpHeight",
-        Desc = "Adjust the height of auto jump",
+        Desc = "Jump height.",
         Step = 0.1,
         Value = { Min = 1, Max = 10, Default = 3.5 },
         Callback = function(value)
@@ -1945,7 +1944,7 @@ _G.ZentraToggles.HeadHit = {
     LegitSection:Slider({
         Title = "Jump Cooldown",
         Flag = "Legit_JumpCooldown",
-        Desc = "Cooldown for auto jumps",
+        Desc = "Cooldown between jumps.",
         Step = 0.1,
         Value = { Min = 0, Max = 2, Default = 0 },
         Callback = function(value)
@@ -2177,8 +2176,8 @@ toggleWidgetRef = HitboxSection:Toggle({
         end)
     end
 })
-_G.ZentraToggleElements = _G.ZentraToggleElements or {}
-_G.ZentraToggleElements.HitboxExpander = toggleWidgetRef
+_G.VelionToggleElements = _G.VelionToggleElements or {}
+_G.VelionToggleElements.HitboxExpander = toggleWidgetRef
 
 -- Slider: Hitbox Size (capture reference)
 sliderSizeWidgetRef = HitboxSection:Slider({
@@ -2241,7 +2240,7 @@ local ShoveHitboxSection = MainTab:Section({ Title = "Shove Hitbox", Icon = "zap
 local ShoveHitboxToggle = ShoveHitboxSection:Toggle({
     Title = "Shove Hitbox",
     Flag = "ShoveHitbox_Enabled",
-    Desc = "Will make the Shove Hitbox Larger.",
+    Desc = "Expands the shove hitbox.",
     Default = false,
     Callback = function(v)
         ShoveHitboxExpanderEnabled = v
@@ -2263,13 +2262,13 @@ local ShoveHitboxToggle = ShoveHitboxSection:Toggle({
         })
     end
 })
-_G.ZentraToggleElements = _G.ZentraToggleElements or {}
-_G.ZentraToggleElements.ShoveHitbox = ShoveHitboxToggle
+_G.VelionToggleElements = _G.VelionToggleElements or {}
+_G.VelionToggleElements.ShoveHitbox = ShoveHitboxToggle
 
 ShoveHitboxSection:Slider({
     Title = "Hit Range",
     Flag = "ShoveHitbox_Range",
-    Desc = "How far your shove can reach zombies.",
+    Desc = "Shove reach distance.",
     Step = 1,
     Value = { Min = 1, Max = 15, Default = 15 },
     Callback = function(v)
@@ -2280,7 +2279,7 @@ ShoveHitboxSection:Slider({
 ShoveHitboxSection:Slider({
     Title = "Max Targets",
     Flag = "ShoveHitbox_Targets",
-    Desc = "How many zombies to hit per shove.",
+    Desc = "Zombies hit per shove.",
     Step = 1,
     Value = { Min = 1, Max = 10, Default = 10 },
     Callback = function(v)
@@ -2295,7 +2294,7 @@ AutoParrySapperMeleeEnabled = false
 local AutoParrySapperToggle = ShoveHitboxSection:Toggle({
     Title = "Auto Parry Sapper",
     Flag = "ShoveHitbox_AutoParrySapper",
-    Desc = "Will Parry An Zapper When Its Attacking (Axe And Pickaxe).",
+    Desc = "Auto parry when a Zapper attacks.",
     Default = false,
     Callback = function(v)
         AutoParrySapperMeleeEnabled = v
@@ -2307,7 +2306,7 @@ local AutoParrySapperToggle = ShoveHitboxSection:Toggle({
         })
     end
 })
-_G.ZentraToggleElements.AutoParrySapper = AutoParrySapperToggle
+_G.VelionToggleElements.AutoParrySapper = AutoParrySapperToggle
 
     -- Cleanup function  
     local function cleanup()  
@@ -2319,7 +2318,7 @@ _G.ZentraToggleElements.AutoParrySapper = AutoParrySapperToggle
         Remote = nil  
     end  
   
-    _G.ZentraHeadHitCleanup = cleanup
+    _G.VelionHeadHitCleanup = cleanup
 end -- end of Shove Hitbox Section
 
 task.wait(0.1) -- Delay to prevent lag
@@ -2761,7 +2760,7 @@ local aimDotFrameCounter = 0
 local AIM_DOT_BASE_UPDATE_INTERVAL = 2 -- Update every N frames when no target
 local AIM_DOT_IDLE_LOWEND_INTERVAL = 6 -- Throttle harder when idle on low-end
 local function getAimDotInterval()
-    local low = (_G.ZentraPerf and _G.ZentraPerf.lowEndMode) or (_G.LowEndMode == true)
+    local low = (_G.VelionPerf and _G.VelionPerf.lowEndMode) or (_G.LowEndMode == true)
     return low and AIM_DOT_IDLE_LOWEND_INTERVAL or AIM_DOT_BASE_UPDATE_INTERVAL
 end
 local function startAimDotUpdateLoop()
@@ -5484,7 +5483,7 @@ do -- Gun Tab UI Section scope (always runs)
     local shootDropdown = AutoShootSection:Dropdown({
         Title = "Select Zombie Types To AutoShoot",
         Flag = "Shooting_Type_Select",
-        Desc = "Choose which zombie types to target.",
+        Desc = "Select zombie types to target.",
         Values = ShootTypeList,
         Value = {},
         Multi = true,
@@ -5514,7 +5513,7 @@ do -- Gun Tab UI Section scope (always runs)
     local AutoShootToggle = AutoShootSection:Toggle({
         Title = "Auto Fire",
         Flag = "Shooting_Enable_Selected",
-        Desc = "Enable Auto Shooting for the selected zombie types.",
+        Desc = "Auto shoot selected zombie types.",
         Icon = "play",
         Value = USER_AUTO_SHOOT_TOGGLE,
         Callback = function(state)
@@ -5528,14 +5527,14 @@ do -- Gun Tab UI Section scope (always runs)
             end
         end
     })
-    _G.ZentraToggleElements = _G.ZentraToggleElements or {}
-    _G.ZentraToggleElements.AutoShoot = AutoShootToggle
+    _G.VelionToggleElements = _G.VelionToggleElements or {}
+    _G.VelionToggleElements.AutoShoot = AutoShootToggle
 
     -- Keep "Instant Shoot" behavior but generalized: instant for any selected type
     local InstantShootToggle = AutoShootSection:Toggle({
         Title = "Instant Shoot",
         Flag = "Shooting_Instant",
-        Desc = "Instantly shoot selected zombies (No Animations)",
+        Desc = "Shoot instantly, no animations.",
         Icon = "zap",
         Value = INSTANT_SHOOT_ENABLED,
         Callback = function(state)
@@ -5543,12 +5542,12 @@ do -- Gun Tab UI Section scope (always runs)
             APPEAR_DELAY = (INSTANT_SHOOT_ENABLED and 0.1) or APPEAR_DELAY_DEFAULT
         end
     })
-    _G.ZentraToggleElements.InstantShoot = InstantShootToggle
+    _G.VelionToggleElements.InstantShoot = InstantShootToggle
     
     AutoShootSection:Slider({
         Title = "Auto Shoot Delay",
         Flag = "Shooting_AutoShootDelay",
-        Desc = "Total time from aiming to firing (seconds). Set higher for smoother rotation.",
+        Desc = "Time from aim to fire (seconds).",
         Step = 0.1,
         Value = { Min = 0.5, Max = 5, Default = AUTO_SHOOT_DELAY },
         Callback = function(val)
@@ -5558,7 +5557,7 @@ do -- Gun Tab UI Section scope (always runs)
     AutoShootSection:Slider({
         Title = "Base Prediction",
         Flag = "Shooting_Prediction",
-        Desc = "Lead time in seconds (0.20 is recommended)",
+        Desc = "Movement lead time (0.20 recommended).",
         Step = 0.2,
         Value = { Min = 0, Max = 1, Default = PREDICTION_DISTANCE },
         Callback = function(val)
@@ -5568,7 +5567,7 @@ do -- Gun Tab UI Section scope (always runs)
     AutoShootSection:Slider({
         Title = "Max Target Range",
         Flag = "Shooting_MaxRange",
-        Desc = "Maximum detection range.",
+        Desc = "Max detection range.",
         Step = 1,
         Value = { Min = 1, Max = 600, Default = MAX_TARGET_RANGE },
         Callback = function(val) MAX_TARGET_RANGE = val end
@@ -5577,7 +5576,7 @@ do -- Gun Tab UI Section scope (always runs)
     local UseFovToggle = AutoShootSection:Toggle({
         Title = "Use Fov",
         Flag = "Shooting_UseFov",
-        Desc = "Only target zombies inside the FOV.",
+        Desc = "Only target within FOV.",
         Icon = "circle",
         Value = USE_FOV,
         Callback = function(state)
@@ -5585,12 +5584,12 @@ do -- Gun Tab UI Section scope (always runs)
             updateFovCircle()
         end
     })
-    _G.ZentraToggleElements.UseFov = UseFovToggle
+    _G.VelionToggleElements.UseFov = UseFovToggle
 
     AutoShootSection:Toggle({
         Title = "Mobile Fov",
         Flag = "Shooting_MobileFov",
-        Desc = "Fov stays in the middle (can be used in pc too).",
+        Desc = "Lock FOV to screen center.",
         Icon = "smartphone",
         Value = MOBILE_FOV,
         Callback = function(state)
@@ -5601,7 +5600,7 @@ do -- Gun Tab UI Section scope (always runs)
     local ShowFovToggle = AutoShootSection:Toggle({
         Title = "Show Fov",
         Flag = "Shooting_ShowFov",
-        Desc = "Show the fov circle.",
+        Desc = "Show FOV circle.",
         Icon = "eye",
         Value = SHOW_FOV,
         Callback = function(state)
@@ -5609,12 +5608,12 @@ do -- Gun Tab UI Section scope (always runs)
             updateFovCircle()
         end
     })
-    _G.ZentraToggleElements.ShowFov = ShowFovToggle
+    _G.VelionToggleElements.ShowFov = ShowFovToggle
 
     AutoShootSection:Slider({
         Title = "Fov Size",
         Flag = "Shooting_FovSize",
-        Desc = "change the FOV circle size.",
+        Desc = "FOV circle size.",
         Step = 1,
         Value = { Min = FOV_MIN_DEG, Max = FOV_MAX_DEG, Default = FOV_SIZE_DEG },
         Callback = function(val)
@@ -5625,15 +5624,15 @@ do -- Gun Tab UI Section scope (always runs)
     local WallCheckToggle = AutoShootSection:Toggle({
         Title = "Wall Check (Raycast)",
         Flag = "Shooting_WallCheck",
-        Desc = "Selected zombies behind walls will be ignored.",
+        Desc = "Ignore zombies behind walls.",
         Icon = "shield-off",
         Value = CHECK_WALLS,
         Callback = function(state) CHECK_WALLS = state end
     })
-    _G.ZentraToggleElements.WallCheck = WallCheckToggle
+    _G.VelionToggleElements.WallCheck = WallCheckToggle
 
-    local AutoReloadToggle = GunModSection:Toggle({ Title = "Auto Reload", Flag = "GunMod_AutoReload", Desc = "Automatically reload.", Icon = "refresh-cw", Value = AUTO_RELOAD_ENABLED, Callback = function(state) AUTO_RELOAD_ENABLED = state end })
-    _G.ZentraToggleElements.AutoReload = AutoReloadToggle
+    local AutoReloadToggle = GunModSection:Toggle({ Title = "Auto Reload", Flag = "GunMod_AutoReload", Desc = "Auto reload.", Icon = "refresh-cw", Value = AUTO_RELOAD_ENABLED, Callback = function(state) AUTO_RELOAD_ENABLED = state end })
+    _G.VelionToggleElements.AutoReload = AutoReloadToggle
     end -- End Auto Shoot Section scope
     
     -- ===== SILENT AIM SECTION =====
@@ -5643,7 +5642,7 @@ do -- Gun Tab UI Section scope (always runs)
     local SilentAimToggle = SilentAimSection:Toggle({
         Title = "Silent Shoot",
         Flag = "SilentAim_Master",
-        Desc = "Master toggle for Silent Aim. Must be enabled for any silent aim features to work.",
+        Desc = "Master toggle for Silent Aim.",
         Icon = "power",
         Value = SILENT_AIM_ENABLED,
         Callback = function(state)
@@ -5656,16 +5655,16 @@ do -- Gun Tab UI Section scope (always runs)
             })
         end
     })
-    _G.ZentraToggleElements = _G.ZentraToggleElements or {}
-    _G.ZentraToggleElements.SilentAim = SilentAimToggle
+    _G.VelionToggleElements = _G.VelionToggleElements or {}
+    _G.VelionToggleElements.SilentAim = SilentAimToggle
 
-    _G.ZentraToggleElements.SilentAimAutoAim = SilentAimAutoAimToggle
+    _G.VelionToggleElements.SilentAimAutoAim = SilentAimAutoAimToggle
     
     -- Silent Aim zombie type dropdown (separate from auto shoot)
     SilentAimSection:Dropdown({
         Title = "Select Zombie Types",
         Flag = "SilentAim_Type_Select",
-        Desc = "Choose which zombie types Silent Aim will target.",
+        Desc = "Select zombie types for Silent Aim.",
         Values = SilentAimZombieTypes,
         Value = {},
         Multi = true,
@@ -5695,7 +5694,7 @@ do -- Gun Tab UI Section scope (always runs)
     SilentAimSection:Toggle({
         Title = "Use Fov",
         Flag = "SilentAim_UseFov",
-        Desc = "Only target zombies inside the FOV for Silent Aim.",
+        Desc = "Silent Aim targets within FOV only.",
         Icon = "circle",
         Value = SILENT_AIM_USE_FOV,
         Callback = function(state)
@@ -5707,7 +5706,7 @@ do -- Gun Tab UI Section scope (always runs)
     SilentAimSection:Toggle({
         Title = "Mobile Fov",
         Flag = "SilentAim_MobileFov",
-        Desc = "Fov stays in the middle (can be used in pc too).",
+        Desc = "Lock FOV to screen center.",
         Icon = "smartphone",
         Value = SILENT_AIM_MOBILE_FOV,
         Callback = function(state)
@@ -5719,7 +5718,7 @@ do -- Gun Tab UI Section scope (always runs)
     SilentAimSection:Toggle({
         Title = "Show Fov",
         Flag = "SilentAim_ShowFov",
-        Desc = "Show the Silent Aim FOV circle (cyan).",
+        Desc = "Show Silent Aim FOV circle (cyan).",
         Icon = "eye",
         Value = SILENT_AIM_SHOW_FOV,
         Callback = function(state)
@@ -5731,7 +5730,7 @@ do -- Gun Tab UI Section scope (always runs)
     SilentAimSection:Slider({
         Title = "Fov Size",
         Flag = "SilentAim_FovSize",
-        Desc = "Change the Silent Aim FOV circle size.",
+        Desc = "Silent Aim FOV circle size.",
         Step = 1,
         Value = { Min = FOV_MIN_DEG, Max = FOV_MAX_DEG, Default = SILENT_AIM_FOV_SIZE },
         Callback = function(val)
@@ -5743,7 +5742,7 @@ do -- Gun Tab UI Section scope (always runs)
     SilentAimSection:Toggle({
         Title = "Silent Aim Save Players",
         Flag = "SilentAim_SavePlayers",
-        Desc = "Redirect shots to zombies grabbing players (higher priority than zombie targeting).",
+        Desc = "Redirect shots to zombies grabbing players.",
         Icon = "shield",
         Value = SILENT_AIM_SAVE_PLAYERS_ENABLED,
         Callback = function(state)
@@ -5771,7 +5770,7 @@ do -- Gun Tab UI Section scope (always runs)
     SilentAimSection:Dropdown({
         Title = "Save Players Whitelist",
         Flag = "SilentAim_SavePlayers_Whitelist",
-        Desc = "Only redirect shots to save these players",
+        Desc = "Only save players in the list.",
         Values = getSilentAimSavePlayersNames(),
         Value = {"All"},
         Multi = true,
@@ -5806,7 +5805,7 @@ do -- Gun Tab UI Section scope (always runs)
     SilentAimSection:Toggle({
         Title = "Silent Aim Bomber Near Teammates",
         Flag = "SilentAim_BomberNear",
-        Desc = "Only redirect shots to bombers when they are near teammates.",
+        Desc = "Shoot Bombers only when near teammates.",
         Icon = "users",
         Value = SILENT_AIM_BOMBER_NEAR_ENABLED,
         Callback = function(state)
@@ -5834,7 +5833,7 @@ do -- Gun Tab UI Section scope (always runs)
     SilentAimSection:Dropdown({
         Title = "Bomber Near Whitelist",
         Flag = "SilentAim_BomberNear_Whitelist",
-        Desc = "Only shoot bombers near these teammates",
+        Desc = "Teammates used as Bomber shoot condition.",
         Values = getSilentAimBomberNearNames(),
         Value = {"All"},
         Multi = true,
@@ -5873,17 +5872,17 @@ do -- Gun Tab UI Section scope (always runs)
     local AutoSavePlayersToggle = SavePlayersSection:Toggle({
         Title = "Save Player",
         Flag = "SavePlayers_AutoSavePlayers",
-        Desc = "Shoot Zombies Grabbing The player.",
+        Desc = "Shoot zombies grabbing players.",
         Icon = "shield",
         Value = AUTO_SAVE_PLAYERS_ENABLED,
         Callback = function(state) AUTO_SAVE_PLAYERS_ENABLED = state end
     })
-    _G.ZentraToggleElements.AutoSavePlayers = AutoSavePlayersToggle
+    _G.VelionToggleElements.AutoSavePlayers = AutoSavePlayersToggle
 
     SavePlayersSection:Toggle({
         Title = "Instant Save Players",
         Flag = "SavePlayers_InstantSavePlayers",
-        Desc = "Instantly shoot the zombie grabbing the player (No Animations)",
+        Desc = "Shoot instantly, no animations.",
         Icon = "zap",
         Value = INSTANT_SAVE_PLAYERS_ENABLED,
         Callback = function(state) INSTANT_SAVE_PLAYERS_ENABLED = state end
@@ -5891,7 +5890,7 @@ do -- Gun Tab UI Section scope (always runs)
     SavePlayersSection:Slider({
         Title = "Save Player Delay",
         Flag = "SavePlayers_Delay",
-        Desc = "Delay before shooting when saving player (seconds)",
+        Desc = "Delay before shooting (seconds).",
         Step = 0.1,
         Value = { Min = 0, Max = 5, Default = SAVE_PLAYER_DELAY },
         Callback = function(val) SAVE_PLAYER_DELAY = val end
@@ -5899,7 +5898,7 @@ do -- Gun Tab UI Section scope (always runs)
     SavePlayersSection:Slider({
         Title = "Max Save Players Range",
         Flag = "SavePlayers_MaxRange",
-        Desc = "Max save players distance.",
+        Desc = "Max save range.",
         Step = 1,
         Value = { Min = 50, Max = 600, Default = MAX_SAVE_PLAYERS_RANGE },
         Callback = function(val) MAX_SAVE_PLAYERS_RANGE = val end
@@ -5909,7 +5908,7 @@ do -- Gun Tab UI Section scope (always runs)
     SavePlayersSection:Toggle({
         Title = "Use Fov",
         Flag = "SavePlayers_UseFov",
-        Desc = "Only save players if zombie is inside the FOV.",
+        Desc = "Save players within FOV only.",
         Icon = "circle",
         Value = AUTO_SAVE_USE_FOV,
         Callback = function(state)
@@ -5921,7 +5920,7 @@ do -- Gun Tab UI Section scope (always runs)
     SavePlayersSection:Toggle({
         Title = "Mobile Fov",
         Flag = "SavePlayers_MobileFov",
-        Desc = "Fov stays in the middle (can be used in pc too).",
+        Desc = "Lock FOV to screen center.",
         Icon = "smartphone",
         Value = AUTO_SAVE_MOBILE_FOV,
         Callback = function(state)
@@ -5933,7 +5932,7 @@ do -- Gun Tab UI Section scope (always runs)
     SavePlayersSection:Toggle({
         Title = "Show Fov",
         Flag = "SavePlayers_ShowFov",
-        Desc = "Show the Auto Save FOV circle (green).",
+        Desc = "Show Auto Save FOV circle (green).",
         Icon = "eye",
         Value = AUTO_SAVE_SHOW_FOV,
         Callback = function(state)
@@ -5945,7 +5944,7 @@ do -- Gun Tab UI Section scope (always runs)
     SavePlayersSection:Slider({
         Title = "Fov Size",
         Flag = "SavePlayers_FovSize",
-        Desc = "Change the Auto Save FOV circle size.",
+        Desc = "Auto Save FOV circle size.",
         Step = 1,
         Value = { Min = FOV_MIN_DEG, Max = FOV_MAX_DEG, Default = AUTO_SAVE_FOV_SIZE },
         Callback = function(val)
@@ -5967,7 +5966,7 @@ do -- Gun Tab UI Section scope (always runs)
     SavePlayersSection:Dropdown({
         Title = "Auto Save Whitelist",
         Flag = "SavePlayers_Whitelist",
-        Desc = "Only save these players",
+        Desc = "Only save players in this list.",
         Values = getAutoSavePlayerNames(),
         Value = {"All"},
         Multi = true,
@@ -6008,7 +6007,7 @@ do -- Gun Tab UI Section scope (always runs)
     local DontShootBomberNearTeammatesToggle = SafetyTrollingSection:Toggle({
         Title = "Don't Shoot Bomber Near Teammates",
         Flag = "Safety_BomberSafeTeammates",
-        Desc = "Won't shoot bombers within the safety radius of teammates.",
+        Desc = "Don't shoot Bombers if teammates are in radius.",
         Icon = "shield",
         Value = BOMBER_SAFE_TEAMMATES,
         Callback = function(state)
@@ -6043,7 +6042,7 @@ do -- Gun Tab UI Section scope (always runs)
     DontShootNearWhitelistDropdown = SafetyTrollingSection:Dropdown({
         Title = "Don't Shoot Near Teammates Whitelist",
         Flag = "Safety_DontShootNear_Whitelist",
-        Desc = "Won't shoot bombers if these specific players are within blast radius",
+        Desc = "Teammates to protect from Bomber shots.",
         Values = (function()
             local names = {"None"}
             for _, player in ipairs(Players:GetPlayers()) do
@@ -6088,7 +6087,7 @@ do -- Gun Tab UI Section scope (always runs)
     ShootBomberNearTeammatesToggle = SafetyTrollingSection:Toggle({
         Title = "Shoot Bomber Near Teammates",
         Flag = "Safety_ShootBomberNearTeammates",
-        Desc = "ONLY shoot bombers when teammates are within the safety radius (trolling feature).",
+        Desc = "Only shoot Bombers when teammates are in radius (troll).",
         Icon = "crosshair",
         Value = SHOOT_BOMBER_NEAR_TEAMMATES,
         Callback = function(state)
@@ -6113,7 +6112,7 @@ do -- Gun Tab UI Section scope (always runs)
     ShootBomberNearWhitelistDropdown = SafetyTrollingSection:Dropdown({
         Title = "Shoot Bomber Near Teammates Whitelist",
         Flag = "Safety_ShootBomberNear_Whitelist",
-        Desc = "ONLY shoot bombers when these specific players are within blast radius",
+        Desc = "Targets for the troll feature.",
         Values = (function()
             local names = {"None"}
             for _, player in ipairs(Players:GetPlayers()) do
@@ -6158,7 +6157,7 @@ do -- Gun Tab UI Section scope (always runs)
     SafetyTrollingSection:Toggle({
         Title = "Don't Shoot Bomber Near Me",
         Flag = "Safety_BomberSafeSelf",
-        Desc = "Won't shoot bombers within the safety radius of yourself.",
+        Desc = "Don't shoot Bombers near yourself.",
         Icon = "user",
         Value = BOMBER_SAFE_SELF,
         Callback = function(state)
@@ -6176,7 +6175,7 @@ do -- Gun Tab UI Section scope (always runs)
     SafetyTrollingSection:Slider({
         Title = "Bomber Safety Radius",
         Flag = "Safety_BomberSafeRadius",
-        Desc = "The radius (in studs) for all bomber safety/trolling features.",
+        Desc = "Bomber safety radius (studs).",
         Step = 1,
         Value = { Min = 5, Max = 30, Default = BOMBER_SAFE_RADIUS },
         Callback = function(val)
@@ -6198,7 +6197,7 @@ do -- Gun Tab UI Section scope (always runs)
     TargetsSection:Toggle({
         Title = "Visualize Bomber Explosion Radius",
         Flag = "Targets_BomberVisualize",
-        Desc = "Shows a circle around bombers showing the explosion radius.",
+        Desc = "Show explosion radius circle around Bombers.",
         Icon = "circle",
         Value = BOMBER_VISUALIZE_RADIUS,
         Callback = function(state)
@@ -6222,7 +6221,7 @@ do -- Gun Tab UI Section scope (always runs)
     TargetsSection:Toggle({
         Title = "Target ESP",
         Flag = "Targets_TargetEsp",
-        Desc = "Shows the zombie its currently targeting.",
+        Desc = "Highlight current target zombie.",
         Icon = "eye",
         Value = TARGET_ESP_ENABLED,
         Callback = function(state)
@@ -6240,7 +6239,7 @@ do -- Gun Tab UI Section scope (always runs)
     TargetsSection:Toggle({
         Title = "Show Aim Position",
         Flag = "Targets_AimDot",
-        Desc = "Shows a red dot at the aim position.",
+        Desc = "Show red dot at aim position.",
         Icon = "target",
         Value = AIM_DOT_ENABLED,
         Callback = function(state)
@@ -6603,7 +6602,7 @@ do
     MiscGunSection:Toggle({
         Title = "Hand Mortar Timing",
         Flag = "Misc_HandMortarTiming",
-        Desc = "Shows The Timer Of The Mortar Before Blowing Up.",
+        Desc = "Show Mortar timer before explosion.",
         Icon = "clock",
         Value = HAND_MORTAR_TIMING_ENABLED,
         Callback = function(state)
@@ -7385,7 +7384,7 @@ end
 local espDropdown = ESPSection:Dropdown({
     Title = "Select ESP Types",
     Flag = "DropdowwnEsp",
-    Desc = "Type Of Zombies To Enable Esp At.",
+    Desc = "Select zombie types to show ESP.",
     Values = EspList,
     Value = {},            -- default empty
     Multi = true,
@@ -7468,7 +7467,7 @@ local espDropdown = ESPSection:Dropdown({
 espToggle = ESPSection:Toggle({
     Title = "Enable Selected ESP",
     Flag = "Esp_Select_Toggle",
-    Desc = "Enable Esp From The Selected Type.",
+    Desc = "Enable ESP for selected zombie type.",
     Default = false,
     Callback = function(state)
         -- ensure SelectedESPs is a table
@@ -7515,20 +7514,20 @@ espToggle = ESPSection:Toggle({
     -- ESP Colors (unchanged + new Shambler color)
     -- =========================
     local ColorsSection = EspTab:Section({ Title = "ESP Colors", Icon = "palette", Opened = false })
-    ColorsSection:Colorpicker({ Title = "Barrel (Bomber)", Flag = "Color1", Desc = "Color for Barrel zombies (Bomber)", Default = ESPConfigs.Bomber.color, Transparency = 0, Locked = false, Callback = function(color) ESPConfigs.Bomber.color = color ApplyColorToExisting("Bomber", color) end })
-    ColorsSection:Colorpicker({ Title = "Cuirassier", Flag = "Color2", Desc = "Color for Cuirassier zombies", Default = ESPConfigs.Cuirassier.color, Transparency = 0, Locked = false, Callback = function(color) ESPConfigs.Cuirassier.color = color ApplyColorToExisting("Cuirassier", color) end })
-    ColorsSection:Colorpicker({ Title = "Runner", Flag = "Color3", Desc = "Color for Runner zombies", Default = ESPConfigs.Runner.color, Transparency = 0, Locked = false, Callback = function(color) ESPConfigs.Runner.color = color ApplyColorToExisting("Runner", color) end })
-    ColorsSection:Colorpicker({ Title = "Zapper", Flag = "Color4", Desc = "Color for Zapper zombies", Default = ESPConfigs.Zapper.color, Transparency = 0, Locked = false, Callback = function(color) ESPConfigs.Zapper.color = color ApplyColorToExisting("Zapper", color) end })
-    ColorsSection:Colorpicker({ Title = "Igniter", Flag = "Color5", Desc = "Color for Igniter zombies", Default = ESPConfigs.Igniter.color, Transparency = 0, Locked = false, Callback = function(color) ESPConfigs.Igniter.color = color ApplyColorToExisting("Igniter", color) end })
-    ColorsSection:Colorpicker({ Title = "Shambler (Normal)", Flag = "Color6", Desc = "Color for normal Shambler zombies", Default = ESPConfigs.Shambler.color, Transparency = 0, Locked = false, Callback = function(color) ESPConfigs.Shambler.color = color ApplyColorToExisting("Shambler", color) end })
+    ColorsSection:Colorpicker({ Title = "Barrel (Bomber)", Flag = "Color1", Desc = "Color for Bomber zombies.", Default = ESPConfigs.Bomber.color, Transparency = 0, Locked = false, Callback = function(color) ESPConfigs.Bomber.color = color ApplyColorToExisting("Bomber", color) end })
+    ColorsSection:Colorpicker({ Title = "Cuirassier", Flag = "Color2", Desc = "Color for Cuirassier zombies.", Default = ESPConfigs.Cuirassier.color, Transparency = 0, Locked = false, Callback = function(color) ESPConfigs.Cuirassier.color = color ApplyColorToExisting("Cuirassier", color) end })
+    ColorsSection:Colorpicker({ Title = "Runner", Flag = "Color3", Desc = "Color for Runner zombies.", Default = ESPConfigs.Runner.color, Transparency = 0, Locked = false, Callback = function(color) ESPConfigs.Runner.color = color ApplyColorToExisting("Runner", color) end })
+    ColorsSection:Colorpicker({ Title = "Zapper", Flag = "Color4", Desc = "Color for Zapper zombies.", Default = ESPConfigs.Zapper.color, Transparency = 0, Locked = false, Callback = function(color) ESPConfigs.Zapper.color = color ApplyColorToExisting("Zapper", color) end })
+    ColorsSection:Colorpicker({ Title = "Igniter", Flag = "Color5", Desc = "Color for Igniter zombies.", Default = ESPConfigs.Igniter.color, Transparency = 0, Locked = false, Callback = function(color) ESPConfigs.Igniter.color = color ApplyColorToExisting("Igniter", color) end })
+    ColorsSection:Colorpicker({ Title = "Shambler (Normal)", Flag = "Color6", Desc = "Color for normal Shambler zombies.", Default = ESPConfigs.Shambler.color, Transparency = 0, Locked = false, Callback = function(color) ESPConfigs.Shambler.color = color ApplyColorToExisting("Shambler", color) end })
 
     local SettingsSection = EspTab:Section({ Title = "Settings", Icon = "settings", Opened = false })
-    SettingsSection:Toggle({ Title = "Show Billboard", Flag = "Esp_6", Desc = "Toggles billboards above the zombies", Default = false, Callback = function(state) ShowBillboards = state end })
-    SettingsSection:Slider({ Title = "Chams Transparency", Flag = "Esp_7", Desc = "Controls the transparency of the chams", Value = { Min = 0, Max = 1, Default = 0.6 }, Step = 0.05, Callback = function(value) ChamsTransparency = math.clamp(tonumber(value) or 0.6, 0, 1) UpdateAllTransparencies() end })
+    SettingsSection:Toggle({ Title = "Show Billboard", Flag = "Esp_6", Desc = "Show billboards above zombies.", Default = false, Callback = function(state) ShowBillboards = state end })
+    SettingsSection:Slider({ Title = "Chams Transparency", Flag = "Esp_7", Desc = "Chams transparency.", Value = { Min = 0, Max = 1, Default = 0.6 }, Step = 0.05, Callback = function(value) ChamsTransparency = math.clamp(tonumber(value) or 0.6, 0, 1) UpdateAllTransparencies() end })
     SettingsSection:Slider({
         Title = "Chams View Distance",
         Flag = "Esp_10",
-        Desc = "Maximum distance to render zombie chams/highlights (in studs)",
+        Desc = "Max ESP render distance (studs).",
         Value = { Min = 500, Max = 5000, Default = 2000 },
         Step = 100,
         Callback = function(value)
@@ -7543,8 +7542,8 @@ espToggle = ESPSection:Toggle({
             end
         end
     })
-    SettingsSection:Toggle({ Title = "Performance", Flag = "Esp_8", Desc = "Makes chams into a dot and makes billboard simple", Default = false, Callback = function(state) TogglePerformanceMode(state) end })
-    SettingsSection:Toggle({ Title = "Notify Cuirassier Charge", Flag = "Esp_9", Desc = "Sends a notification when a Cuirassier starts charging", Default = false, Callback = function(state) NotifyCuirassierCharge = state end })
+    SettingsSection:Toggle({ Title = "Performance", Flag = "Esp_8", Desc = "Performance mode (reduces chams to dots).", Default = false, Callback = function(state) TogglePerformanceMode(state) end })
+    SettingsSection:Toggle({ Title = "Notify Cuirassier Charge", Flag = "Esp_9", Desc = "Notify when a Cuirassier charges.", Default = false, Callback = function(state) NotifyCuirassierCharge = state end })
     
     -- PERFORMANCE FIX: Mark ESP Tab initialization as complete
     ESPTab_InitComplete = true
@@ -8148,7 +8147,7 @@ local function KillAura_cleanupAutoLook()
         if char then
             local hrp = char:FindFirstChild("HumanoidRootPart")
             if hrp then
-                local gyro = hrp:FindFirstChild("ZentraAutoLookGyro")
+                local gyro = hrp:FindFirstChild("VelionAutoLookGyro")
                 if gyro then gyro:Destroy() end
             end
         end
@@ -8169,7 +8168,7 @@ local function KillAura_cleanupGroundGyro()
         if char then
             local hrp = char:FindFirstChild("HumanoidRootPart")
             if hrp then
-                local gyro = hrp:FindFirstChild("ZentraAutoLookGyro")
+                local gyro = hrp:FindFirstChild("VelionAutoLookGyro")
                 if gyro then gyro:Destroy() end
             end
         end
@@ -8290,12 +8289,12 @@ local function KillAura_performAutoLook(hrp)
                 targetCFrame = CFrame.lookAt(hrpPos, lookAt)
                 
                 KillAura_autoLookHasTarget = true
-                local autoLookGyro = hrp:FindFirstChild("ZentraAutoLookGyro")
+                local autoLookGyro = hrp:FindFirstChild("VelionAutoLookGyro")
                 
                 if not autoLookGyro or not autoLookGyro.Parent then
                     -- Create new gyro for ground use
                     autoLookGyro = Instance.new("BodyGyro")
-                    autoLookGyro.Name = "ZentraAutoLookGyro"
+                    autoLookGyro.Name = "VelionAutoLookGyro"
                     autoLookGyro.P = 1000000 -- Very high P for instant rotation
                     autoLookGyro.D = 500 -- Low D to reduce oscillation
                     autoLookGyro.MaxTorque = Vector3.new(0, math.huge, 0) -- Y-axis only
@@ -8499,7 +8498,7 @@ end
 HitboxExpanderToggleElement = HitboxExpanderSection:Toggle({
     Title = "Reach",
     Flag = "KillAura_HitboxExpander",
-    Desc = "Will Reach The Zombie For About 30 studs (Might Be Lower)",
+    Desc = "Extend attack range up to ~30 studs.",
     Default = false,
     Callback = function(v)
         KillAura_HitboxExpanderEnabled = v
@@ -8511,13 +8510,13 @@ HitboxExpanderToggleElement = HitboxExpanderSection:Toggle({
         })
     end
 })
-_G.ZentraToggleElements = _G.ZentraToggleElements or {}
-_G.ZentraToggleElements.Reach = HitboxExpanderToggleElement
+_G.VelionToggleElements = _G.VelionToggleElements or {}
+_G.VelionToggleElements.Reach = HitboxExpanderToggleElement
 
 HitboxExpanderSection:Slider({
     Title = "Reach Range",
     Flag = "KillAura_HitboxRange",
-    Desc = "Range of Reach",
+    Desc = "Reach distance.",
     Step = 1,
     Value = { Min = 5, Max = 30, Default = KillAura_MaxRange },
     Callback = function(v)
@@ -8531,7 +8530,7 @@ local KillAuraSection = KillAuraTab:Section({ Title = "Kill Aura", Icon = "sword
 local KillAuraToggle = KillAuraSection:Toggle({
     Title = "Kill Aura",
     Flag = "KillAura_Enabled",
-    Desc = "Automatically Kills Zombie In Range",
+    Desc = "Auto attack zombies in range.",
     Default = false,
     Callback = function(v)
         KillAuraEnabled = v
@@ -8547,11 +8546,11 @@ local KillAuraToggle = KillAuraSection:Toggle({
         })
     end
 })
-_G.ZentraToggleElements.KillAura = KillAuraToggle
+_G.VelionToggleElements.KillAura = KillAuraToggle
 
 KillAuraSection:Slider({
     Title = "Kill Aura Range",
-    Desc = "The Range Of Where Kill Aura Will Start Attacking If a zombie crosses the range.",
+    Desc = "Range where Kill Aura starts attacking.",
     Flag = "KillAura_Range",
     Step = 1,
     Value = { Min = 5, Max = 30, Default = KillAuraRange },
@@ -8562,7 +8561,7 @@ KillAuraSection:Slider({
 
 KillAuraSection:Slider({
     Title = "Attack Speed",
-    Desc = "Delay between attacks (lower = faster).",
+    Desc = "Attack delay (lower = faster).",
     Flag = "KillAura_AttackSpeed",
     Step = 0.01,
     Value = { Min = 0.01, Max = 0.5, Default = KillAuraAttackSpeed },
@@ -8573,7 +8572,7 @@ KillAuraSection:Slider({
 
 KillAuraSection:Slider({
     Title = "Randomness",
-    Desc = "Random delay in attack timing.",
+    Desc = "Random delay for natural timing.",
     Flag = "KillAura_Randomness",
     Step = 0.05,
     Value = { Min = 0, Max = 1, Default = KillAuraRandomness },
@@ -8584,7 +8583,7 @@ KillAuraSection:Slider({
 
 KillAuraSection:Slider({
     Title = "Multi-Target",
-    Desc = "Number of zombies to target in 1 swing.",
+    Desc = "Zombies per swing.",
     Flag = "KillAura_MultiTargets",
     Step = 1,
     Value = { Min = 1, Max = 10, Default = KillAuraMultiTargets },
@@ -8596,18 +8595,18 @@ KillAuraSection:Slider({
 local AutoEquipMeleeToggle = KillAuraSection:Toggle({
     Title = "Auto Equip Melee",
     Flag = "KillAura_AutoEquipMelee",
-    Desc = "Automatically equips a melee from backpack when Kill Aura is on.",
+    Desc = "Auto equip melee when Kill Aura is on.",
     Default = KillAura_AutoEquipMelee,
     Callback = function(v)
         KillAura_AutoEquipMelee = v
     end
 })
-_G.ZentraToggleElements.AutoEquipMelee = AutoEquipMeleeToggle
+_G.VelionToggleElements.AutoEquipMelee = AutoEquipMeleeToggle
 
 KillAuraSection:Dropdown({
     Title = "Target Zombie Types",
     Flag = "KillAura_ZombieTypes",
-    Desc = "Select which zombie types to target",
+    Desc = "Select zombie types to attack.",
     Multi = true,
     Values = {"Shambler", "Bomber", "Runner", "Zapper", "Igniter", "Cuirassier"},
     Default = {"Shambler", "Runner", "Zapper", "Igniter", "Cuirassier"},
@@ -8641,7 +8640,7 @@ KillAuraSection:Dropdown({
 local BayonetKillAuraToggle = KillAuraSection:Toggle({
     Title = "Enable Bayonet Kill Aura",
     Flag = "KillAura_EnableBayonet",
-    Desc = "Kill aura will use bayonet.",
+    Desc = "Kill Aura uses bayonet.",
     Default = KillAura_EnableBayonet,
     Callback = function(v)
         KillAura_EnableBayonet = v
@@ -8653,12 +8652,12 @@ local BayonetKillAuraToggle = KillAuraSection:Toggle({
         })
     end
 })
-_G.ZentraToggleElements.BayonetKillAura = BayonetKillAuraToggle
+_G.VelionToggleElements.BayonetKillAura = BayonetKillAuraToggle
 
 local AutoLookToggle = KillAuraSection:Toggle({
     Title = "Auto Look",
     Flag = "KillAura_AutoLook",
-    Desc = "Automatically looks at the nearest zombie",
+    Desc = "Auto face the nearest zombie.",
     Default = false,
     Callback = function(v)
         KillAuraAutoLook = v
@@ -8674,7 +8673,7 @@ local AutoLookToggle = KillAuraSection:Toggle({
         })
     end
 })
-_G.ZentraToggleElements.AutoLook = AutoLookToggle
+_G.VelionToggleElements.AutoLook = AutoLookToggle
 
 -- PERFORMANCE FIX: Mark KillAura Tab initialization as complete
 KillAuraTab_InitComplete = true
@@ -8868,7 +8867,7 @@ do -- // Classes Tab (Musician Section)
     MusicianSection:Toggle({
         Title = "Auto Play Fife/Drum/Bagpipe",
         Flag = "GunMod_AutoInstrument",
-        Desc = "Automatically plays instruments.",
+        Desc = "Auto play instruments.",
         Icon = "music-2",
         Value = AutoInstrumentEnabled,
         Callback = function(state)
@@ -8959,7 +8958,7 @@ do -- // Medic Section in Classes Tab
     MedicSection:Toggle({
         Title = "Auto Request Heal Dying Players",
         Flag = "Classes_1",
-        Desc = "Automatically requests heal for players with low health when nearby",
+        Desc = "Auto request heal for low HP players nearby.",
         Default = false,
         Callback = function(state)
             AutoRequestHealEnabled = state
@@ -8975,7 +8974,7 @@ do -- // Medic Section in Classes Tab
     MedicSection:Slider({
         Title = "Heal Threshold (%)",
         Flag = "Classes_2",
-        Desc = "Health percentage threshold for auto heal",
+        Desc = "HP % threshold for auto heal.",
         Step = 1,
         Value = {Min = 1, Max = 100, Default = HealThreshold},
         Callback = function(val)
@@ -9153,7 +9152,7 @@ do -- // Medic Section in Classes Tab
     MedicSection:Toggle({
         Title = "Auto Pick Up Supplies",
         Flag = "Classes_AutoPickUpSupplies",
-        Desc = "Automatically picks up supplies.",
+        Desc = "Auto pick up supplies.",
         Default = false,
         Callback = function(state)
             AutoPickUpSuppliesEnabled = state
@@ -9498,7 +9497,7 @@ do -- // Sapper Section in Classes Tab
     SapperSection:Toggle({
         Title = "Auto Repair",
         Flag = "Classes_3",
-        Desc = "Auto repair's Buildings",
+        Desc = "Auto repair buildings.",
         Default = false,
         Callback = function(state)
             AutoRepairEnabled = state
@@ -9536,7 +9535,7 @@ do -- // Sapper Section in Classes Tab
     SapperSection:Dropdown({
         Title = "Repair Target Mode",
         Flag = "Classes_AutoRepairMode",
-        Desc = "Select A Target",
+        Desc = "Select a target.",
         Values = { "Closest Structure", "Lowest Health Structure" },
         Default = nil,
         Callback = function(value)
@@ -10219,12 +10218,12 @@ task.defer(function()
     end
 end)
 
-_G.ZentraToggleElements = _G.ZentraToggleElements or {}
+_G.VelionToggleElements = _G.VelionToggleElements or {}
 
 local ShoveAuraToggle = SapperSection:Toggle({
     Title = "Shove Aura",
     Flag = "Sapper_ShoveAura",
-    Desc = "Auto Shoves Zombies Near You.",
+    Desc = "Auto shove nearby zombies.",
     Default = ShoveAuraEnabled,
     Callback = function(v)
         ShoveAuraEnabled = v
@@ -10240,12 +10239,12 @@ local ShoveAuraToggle = SapperSection:Toggle({
         end)
     end
 })
-_G.ZentraToggleElements.ShoveAura = ShoveAuraToggle
+_G.VelionToggleElements.ShoveAura = ShoveAuraToggle
 
 SapperSection:Slider({
     Title = "Shove Range",
     Flag = "ShoveRange",
-    Desc = "How Far Shove Aura Will Shove",
+    Desc = "Shove Aura range.",
     Step = 1,
     Value = {
         Min = 1,
@@ -10265,7 +10264,7 @@ SapperSection:Slider({
 SapperSection:Slider({
     Title = "Shove Targets",
     Flag = "ShoveRange2",
-    Desc = "How many nearest Zombies to target in 1 shove.",
+    Desc = "Zombies per shove.",
     Step = 1,
     Value = {
         Min = 1,
@@ -10280,7 +10279,7 @@ SapperSection:Slider({
 SapperSection:Slider({
     Title = "Shove Delay",
     Flag = "ShoveRange3",
-    Desc = "controls how fast to shove.",
+    Desc = "Shove speed.",
     Step = 0.01,
     Value = {
         Min = 0.02,
@@ -10565,7 +10564,7 @@ end)
 ChaplainSection:Toggle({
     Title = "Auto Bless Infected Players",
     Flag = "Classes_4",
-    Desc = "Automatically bless players with infection",
+    Desc = "Auto bless infected players.",
     Default = false,
     Callback = function(state)
         AutoBlessEnabled = state
@@ -10581,7 +10580,7 @@ ChaplainSection:Toggle({
 ChaplainSection:Toggle({
     Title = "Auto Mercy Fully Infected",
     Flag = "Classes_AutoMercy",
-    Desc = "Automatically mercy players with 100% infection",
+    Desc = "Auto mercy players at 100% infection.",
     Default = false,
     Callback = function(state)
         AutoMercyEnabled = state
@@ -10597,7 +10596,7 @@ ChaplainSection:Toggle({
 ChaplainSection:Slider({
     Title = "Infected Threshold",
     Flag = "Classes_5",
-    Desc = "Threshold for auto bless (won't bless players at 100%)",
+    Desc = "Infection % to trigger bless (skips 100%).",
     Step = 1,
     Value = {Min = 0, Max = 99, Default = BlessThreshold},
     Callback = function(val)
@@ -11026,7 +11025,7 @@ do -- // Dracula (New) — auto melee remote scanner + robust ESP (Dracula + Sil
     HitSection:Toggle({
         Title = "Hit Dracula",
         Flag = "Dracula_1",
-        Desc = "Automatically attack Dracula using any melee.",
+        Desc = "Auto attack Dracula with melee.",
         Default = HitDraculaEnabled,
         Callback = function(v)
             HitDraculaEnabled = v
@@ -11047,7 +11046,7 @@ do -- // Dracula (New) — auto melee remote scanner + robust ESP (Dracula + Sil
     HitSection:Slider({
         Title = "Swing Spam Count",
         Flag = "Dracula_2",
-        Desc = "Swings per tick (1–25).",
+        Desc = "Swings per tick (1-25).",
         Step = 1,
         Value = { Min = 1, Max = 25, Default = DraculaSpamCount },
         Callback = function(v) DraculaSpamCount = math.clamp(math.floor(v), 1, 25) end
@@ -11056,7 +11055,7 @@ do -- // Dracula (New) — auto melee remote scanner + robust ESP (Dracula + Sil
     HitSection:Slider({
         Title = "Dracula Range",
         Flag = "Dracula_3",
-        Desc = "Attack distance (1–25 studs).",
+        Desc = "Attack distance (1-25 studs).",
         Step = 1,
         Value = { Min = 1, Max = 25, Default = DraculaRange },
         Callback = function(v) DraculaRange = math.clamp(v, 1, 25) end
@@ -11088,7 +11087,7 @@ do -- // Dracula (New) — auto melee remote scanner + robust ESP (Dracula + Sil
     EspSection:Toggle({
         Title = "Silver ESP",
         Flag = "Dracula_5",
-        Desc = "Highlights Silver Trinkets + shows distance.",
+        Desc = "Highlight Silver Trinkets and show distance.",
         Default = SilverEspEnabled,
         Callback = function(v)
             -- If highlight/GUIs unsupported, we auto-disable and notify
@@ -11902,7 +11901,7 @@ do -- // Players Tab
     PlayerESPSection:Toggle({
         Title = "Players Chams ESP",
         Flag = "Players_1",
-        Desc = "Show Chams ESP on Players",
+        Desc = "Show chams ESP on players.",
         Default = false,
         Callback = function(state)
             ChamsESPEnabled = state
@@ -11940,7 +11939,7 @@ do -- // Players Tab
     PlayerESPSection:Toggle({
         Title = "Players Billboard ESP",
         Flag = "Players_2",
-        Desc = "Show Billboard Text On Players",
+        Desc = "Show billboard text above players.",
         Default = false,
         Callback = function(state)
             BillboardESPEnabled = state
@@ -12314,7 +12313,7 @@ do -- // Players Tab
     SelfESPSection:Toggle({
         Title = "Self Highlight ESP",
         Flag = "Self_Highlight",
-        Desc = "Show cyan highlight on yourself",
+        Desc = "Highlight yourself in cyan.",
         Default = false,
         Callback = function(state)
             SelfESPEnabled = state
@@ -12338,7 +12337,7 @@ do -- // Players Tab
     SelfESPSection:Toggle({
         Title = "Self Billboard ESP",
         Flag = "Self_Billboard",
-        Desc = "Show billboard with your name and health",
+        Desc = "Show self billboard with name and HP.",
         Default = false,
         Callback = function(state)
             SelfBillboardEnabled = state
@@ -12363,7 +12362,7 @@ do -- // Players Tab
     SelfESPSection:Toggle({
         Title = "No Billboard Background",
         Flag = "Self_NoBillboardBg",
-        Desc = "Removes the dark background from your self billboard",
+        Desc = "Remove background from self billboard.",
         Default = false,
         Callback = function(state)
             SelfNoBillboardBg = state
@@ -12399,7 +12398,7 @@ do -- // Players Tab
     SelfESPSection:Toggle({
         Title = "Health Bar ESP",
         Flag = "Self_HealthBar",
-        Desc = "Show your HP bar inside the self billboard",
+        Desc = "Show HP bar in self billboard.",
         Default = false,
         Callback = function(state)
             SelfHealthBarESPEnabled = state
@@ -12424,7 +12423,7 @@ do -- // Players Tab
     SelfESPSection:Toggle({
         Title = "Infection Bar ESP",
         Flag = "Self_InfectionBar",
-        Desc = "Show your infection level inside the self billboard",
+        Desc = "Show infection level in self billboard.",
         Default = false,
         Callback = function(state)
             SelfInfectionBarESPEnabled = state
@@ -12452,7 +12451,7 @@ do -- // Players Tab
     SettingsSection:Toggle({
         Title = "Notify Grabbed and Pinned Players",
         Flag = "Players_4",
-        Desc = "Notifies when a player is grabbed or pinned, and shows in chams and billboard.",
+        Desc = "Notify when a player is grabbed or pinned.",
         Default = false,
         Callback = function(state)
             NotifyGrabbedPinnedEnabled = state
@@ -12468,7 +12467,7 @@ do -- // Players Tab
     SettingsSection:Toggle({
         Title = "Show Health Bar",
         Flag = "Players_ShowHealthBar",
-        Desc = "Shows Health Bar On BillBoard",
+        Desc = "Show HP bar on billboard.",
         Default = false,
         Callback = function(state)
             ShowHealthBarEnabled = state
@@ -12490,7 +12489,7 @@ do -- // Players Tab
     SettingsSection:Toggle({
         Title = "Show Infection Bar",
         Flag = "Players_ShowInfectionBar",
-        Desc = "Shows Infection Bar In BillBoard",
+        Desc = "Show infection bar on billboard.",
         Default = false,
         Callback = function(state)
             ShowInfectionBarEnabled = state
@@ -12511,7 +12510,7 @@ do -- // Players Tab
     SettingsSection:Toggle({
         Title = "Notify Low Health Players",
         Flag = "Players_3",
-        Desc = "Notify when players reach Low / Dying health",
+        Desc = "Notify when players are low/dying.",
         Default = false,
         Callback = function(state)
             NotifyLowHealthEnabled = state
@@ -12553,7 +12552,7 @@ do -- // Players Tab
     SettingsSection:Toggle({
         Title = "Team ESP",
         Flag = "Players_TeamESP",
-        Desc = "Color players by their team. Overrides health-based chams color.",
+        Desc = "Color by team, overrides HP-based color.",
         Default = false,
         Callback = function(state)
             TeamESPEnabled = state
@@ -12585,7 +12584,7 @@ do -- // Players Tab
     SettingsSection:Toggle({
         Title = "No billboard Background",
         Flag = "Players_Performance",
-        Desc = "Removes billboard background",
+        Desc = "Remove billboard background.",
         Default = true,
         Callback = function(state)
             PerformanceModeEnabled = state
@@ -12611,7 +12610,7 @@ do -- // Players Tab
     SettingsSection:Slider({
         Title = "Billboard Showing Distance",
         Flag = "Players_BillboardDist",
-        Desc = "Hide billboard when closer than this distance",
+        Desc = "Hide billboard below this distance.",
         Step = 1,
         Value = {
             Min = 5,
@@ -12628,7 +12627,7 @@ do -- // Players Tab
     SettingsSection:Slider({
         Title = "Chams Transparency",
         Flag = "Players_ChamsTransparency",
-        Desc = "Controls the transparency of player chams/highlights",
+        Desc = "Player chams transparency.",
         Step = 0.05,
         Value = {
             Min = 0,
@@ -12651,7 +12650,7 @@ do -- // Players Tab
     SettingsSection:Toggle({
         Title = "Notify Low Health Players",
         Flag = "Players_3_Dupe",
-        Desc = "Notify when players reach Low / Dying health",
+        Desc = "Notify when players are low/dying.",
         Default = false,
         Callback = function(state)
             NotifyLowHealthEnabled = state
@@ -13189,7 +13188,7 @@ do -- // Headless Horseman Tab
         keybindInput = HeadlessSection:Input({
             Flag = "Headless_1",
             Title = "Aimlock Keybind",
-            Desc = "Press a key to set the aimlock keybind",
+            Desc = "Press a key to set the aimlock keybind.",
             Placeholder = aimKeybind and aimKeybind.Name or "(Touch)",
             Callback = function()
                 if ListeningForBind then return end
@@ -13227,7 +13226,7 @@ do -- // Headless Horseman Tab
         HeadlessSection:Toggle({
             Title = "Headless Horseman ESP",
             Flag = "Headless_2",
-            Desc = "Highlight the Headless Horseman boss",
+            Desc = "Highlight the Headless Horseman boss.",
             Default = false,
             Callback = function(state)
                 HeadlessESPEnabled = state
@@ -13243,7 +13242,7 @@ do -- // Headless Horseman Tab
         HeadlessSection:Toggle({
             Title = "Headless Aimbot",
             Flag = "Headless_3",
-            Desc = "Aimlock onto the Headless Horseman",
+            Desc = "Aimlock onto the Headless Horseman.",
             Default = false,
             Callback = function(state)
                 HeadlessAimlockEnabled = state
@@ -13274,7 +13273,7 @@ do -- // Headless Horseman Tab
         HeadlessSection:Slider({
             Title = "Prediction (Ping in ms)",
             Flag = "Headless_4",
-            Desc = "Adjust aimlock prediction based on your ping",
+            Desc = "Adjust aimlock prediction for ping.",
             Step = 1,
             Value = {Min = 30, Max = 300, Default = manualPing},
             Callback = function(val)
@@ -13285,7 +13284,7 @@ do -- // Headless Horseman Tab
         HeadlessSection:Slider({
             Title = "Aim Button Size",
             Flag = "Headless_5",
-            Desc = "Adjust on-screen aimlock button size",
+            Desc = "On-screen aimlock button size.",
             Step = 1,
             Value = {Min = 40, Max = 200, Default = aimButtonSize},
             Callback = function(val)
@@ -13365,7 +13364,7 @@ do -- // Headless Horseman Tab
         end
     end
 
-    _G.ZentraHeadlessAimlockCleanup = cleanup
+    _G.VelionHeadlessAimlockCleanup = cleanup
 end -- end of Headless Horseman Tab
 
 task.wait(0.1) -- Delay to prevent lag
@@ -13425,7 +13424,7 @@ end
 -- textbox for entering profile name
 ConfigSection:Input({
     Title = "Profile Name",
-    Desc = "Enter a name for the config",
+    Desc = "Config name.",
     Placeholder = "default",
     Callback = function(val)
         if val and tostring(val):match("%S") then
@@ -13437,7 +13436,7 @@ ConfigSection:Input({
 -- Save button
 ConfigSection:Button({
     Title = "Save Profile",
-    Desc = "Save all current settings to a profile",
+    Desc = "Save current settings.",
     Callback = function()
         local name = tostring(profileName or ""):gsub("^%s+", ""):gsub("%s+$", "")
         if name == "" then notify("Config", "Enter a profile name first", "alert-circle", 2); return end
@@ -13475,7 +13474,7 @@ ConfigSection:Button({
 -- Dropdown for selecting profiles
 ConfigDropdown = ConfigSection:Dropdown({
     Title = "Saved Profiles",
-    Desc = "Select a saved profile to load or delete",
+    Desc = "Select a saved config.",
     Values = GetAllConfigsSafe(),
     Value = GetAllConfigsSafe()[1] or "",
     Callback = function(option)
@@ -13486,7 +13485,7 @@ ConfigDropdown = ConfigSection:Dropdown({
 -- Load button
 ConfigSection:Button({
     Title = "Load Selected",
-    Desc = "Load The Selected Config",
+    Desc = "Load selected config.",
     Callback = function()
         if not selectedProfile or tostring(selectedProfile) == "" then 
             notify("Config", "Select a profile first", "alert-circle", 2)
@@ -13509,7 +13508,7 @@ ConfigSection:Button({
 -- Delete button
 ConfigSection:Button({
     Title = "Delete Selected",
-    Desc = "Delete the selected Config",
+    Desc = "Delete selected config.",
     Callback = function()
         if not selectedProfile or tostring(selectedProfile) == "" then 
             notify("Config", "Select a profile first", "alert-circle", 2)
@@ -13533,7 +13532,7 @@ ConfigSection:Button({
 -- Refresh button
 ConfigSection:Button({
     Title = "Refresh List",
-    Desc = "Refresh the dropdown of saved Configs",
+    Desc = "Refresh config list.",
     Callback = function()
         RefreshConfigsDropdown()
         notify("Config", "Refreshed list", "refresh-cw", 1.3)
@@ -13543,7 +13542,7 @@ ConfigSection:Button({
 -- Overwrite toggle
 ConfigSection:Toggle({
     Title = "Overwrite Existing",
-    Desc = "Allow overwriting configs with the same name",
+    Desc = "Allow overwriting configs with the same name.",
     Value = overwriteExisting,
     Callback = function(val)
         overwriteExisting = val
@@ -13907,13 +13906,13 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         -- Scan status paragraph
         scanStatusParagraph = AnimationsSection:Paragraph({
             Title = "Animation Count",
-            Desc = "Click 'Scan Animations' to load (prevents lag on startup)"
+            Desc = "Click Scan first to load animations."
         })
         
         -- Rescan button (now the primary way to load animations)
         AnimationsSection:Button({
             Title = "Scan Animations",
-            Desc = "Scan game for animations (runs in background)",
+            Desc = "Scan game for animations (runs in background).",
             Callback = function()
                 -- Show scanning notification
                 WindUI:Notify({
@@ -13968,7 +13967,7 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         -- Search input
         AnimationsSection:Input({
             Title = "Search Animations",
-            Desc = "Filter animations by name or ID",
+            Desc = "Filter animations by name or ID.",
             Placeholder = "Type to search...",
             Callback = function(text)
                 animSearchQuery = text
@@ -14034,7 +14033,7 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         -- Animation dropdown (starts empty - user must scan first)
         animationDropdown = AnimationsSection:Dropdown({
             Title = "Select Animation",
-            Desc = "Choose an animation to play",
+            Desc = "Choose an animation.",
             Flag = "Animations_Select",
             Multi = false,
             Values = {"Click 'Scan Animations' to load"},
@@ -14054,13 +14053,13 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         -- Animation details paragraph with Copy ID button
         animDetailsParagraph = AnimationsSection:Paragraph({
             Title = "Selected Animation",
-            Desc = "No animation selected"
+            Desc = "No animation selected."
         })
         
         -- Copy ID button
         AnimationsSection:Button({
             Title = "Copy Animation ID",
-            Desc = "Copy the selected animation ID to clipboard",
+            Desc = "Copy selected animation ID.",
             Callback = function()
                 if selectedAnimId then
                     pcall(function()
@@ -14090,7 +14089,7 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         -- Loop Animation toggle
         AnimationsSection:Toggle({
             Title = "Loop Animation",
-            Desc = "Loop the selected animation until disabled",
+            Desc = "Loop selected animation.",
             Default = false,
             Callback = function(state)
                 loopAnimationEnabled = state
@@ -14152,7 +14151,7 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         -- Play animation button
         AnimationsSection:Button({
             Title = "Play Animation",
-            Desc = "Play the selected animation on your character",
+            Desc = "Play animation on your character.",
             Callback = function()
                 if not selectedAnimId then
                     WindUI:Notify({
@@ -14195,7 +14194,7 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         -- Stop animation button
         AnimationsSection:Button({
             Title = "Stop All Animations",
-            Desc = "Stop all currently playing animations",
+            Desc = "Stop all animations.",
             Callback = function()
                 pcall(function()
                     -- Stop tracked animations
@@ -14245,7 +14244,7 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         -- Input for custom animation ID
         CustomAnimSection:Input({
             Title = "Animation ID",
-            Desc = "Paste an animation ID (e.g. rbxassetid://123456)",
+            Desc = "Enter a custom animation ID.",
             Placeholder = "rbxassetid://...",
             Callback = function(text)
                 customAnimId = text
@@ -14255,7 +14254,7 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         -- Loop toggle for custom animation
         CustomAnimSection:Toggle({
             Title = "Loop Animation",
-            Desc = "Loop the custom animation until disabled",
+            Desc = "Loop custom animation.",
             Default = false,
             Callback = function(state)
                 customLoopEnabled = state
@@ -14317,7 +14316,7 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         -- Play custom animation button
         CustomAnimSection:Button({
             Title = "Play Animation",
-            Desc = "Play the custom animation once",
+            Desc = "Play custom animation once.",
             Callback = function()
                 if not customAnimId or customAnimId == "" then
                     WindUI:Notify({
@@ -14360,7 +14359,7 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         -- Stop custom animation button
         CustomAnimSection:Button({
             Title = "Stop Animation",
-            Desc = "Stop all custom animations",
+            Desc = "Stop all custom animations.",
             Callback = function()
                 pcall(function()
                     -- Stop tracked custom animations
@@ -14547,7 +14546,7 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         -- Stop All Presets Button
         AnimPresetSection:Button({
             Title = "Stop All Presets",
-            Desc = "Stop all animation presets and restore normal state",
+            Desc = "Stop all presets and restore normal state.",
             Callback = function()
                 stopAllPresets()
                 WindUI:Notify({ Title = "Animation Preset", Content = "All presets stopped!", Duration = 2, Icon = "square" })
@@ -14559,7 +14558,7 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         
         AnimPresetSection:Button({
             Title = "Zapper",
-            Desc = "Zapper zombie animation with effect",
+            Desc = "Zapper animation with effect.",
             Callback = function()
                 local animator, humanoid = getAnimator()
                 if not animator then return end
@@ -14582,73 +14581,73 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         
         AnimPresetSection:Button({
             Title = "Zapper Animation",
-            Desc = "Standard Zapper zombie animation",
+            Desc = "Standard Zapper animation.",
             Callback = function() playIdleWalkPreset("Zapper", "14498563473", "14498289874", Enum.AnimationPriority.Action3, nil) end
         })
         
         AnimPresetSection:Button({
             Title = "Zapper Effect",
-            Desc = "Play Zapper special effect once",
+            Desc = "Play Zapper special effect once.",
             Callback = function() playOneShotPreset("Zapper Effect", "14499470197", nil) end
         })
         
         AnimPresetSection:Button({
             Title = "Shambler Animation",
-            Desc = "Shambler zombie idle/walk",
+            Desc = "Shambler idle/walk animation.",
             Callback = function() playIdleWalkPreset("Shambler", "12333488814", "14463730540", Enum.AnimationPriority.Action3, nil) end
         })
         
         AnimPresetSection:Button({
             Title = "Old Shambler",
-            Desc = "Old Shambler zombie animation",
+            Desc = "Old Shambler animation.",
             Callback = function() playIdleWalkPreset("Old Shambler", "12333488814", "12333490857", Enum.AnimationPriority.Idle, nil) end
         })
         
         AnimPresetSection:Button({
             Title = "Shambler Eating",
-            Desc = "Shambler eating animation (10 sec)",
+            Desc = "Shambler eating animation (10 sec).",
             Callback = function() playOneShotPreset("Shambler Eating", "18339432914", 10) end
         })
         
         AnimPresetSection:Button({
             Title = "Lantern",
-            Desc = "Lantern zombie animation",
+            Desc = "Lantern zombie animation.",
             Callback = function() playIdleWalkPreset("Lantern", "14678879479", "14678880308", Enum.AnimationPriority.Action3, nil) end
         })
         
         AnimPresetSection:Button({
             Title = "Cuirassier Animation",
-            Desc = "Cuirassier zombie animation",
+            Desc = "Cuirassier animation.",
             Callback = function() playIdleWalkPreset("Cuirassier", "87579228279296", "102081698785465", Enum.AnimationPriority.Action3, nil) end
         })
         
         AnimPresetSection:Button({
             Title = "Cuirassier Alt",
-            Desc = "Alternate Cuirassier animation",
+            Desc = "Alternate Cuirassier animation.",
             Callback = function() playIdleWalkPreset("Cuirassier Alt", "82800474630427", "118210337289087", Enum.AnimationPriority.Action3, nil) end
         })
         
         AnimPresetSection:Button({
             Title = "Headless zombie",
-            Desc = "Headless zombie animation",
+            Desc = "Headless zombie animation.",
             Callback = function() playIdleWalkPreset("Headless zombie", "107080941320600", "74764025513892", Enum.AnimationPriority.Action3, nil) end
         })
         
         AnimPresetSection:Button({
             Title = "Crawler",
-            Desc = "Crawling zombie animation",
+            Desc = "Crawling zombie animation.",
             Callback = function() playIdleWalkPreset("Crawler", "13726632691", "13726634549", Enum.AnimationPriority.Action3, nil) end
         })
         
         AnimPresetSection:Button({
             Title = "Bomber Animation",
-            Desc = "Self-destruct bomber animation",
+            Desc = "Bomber self-destruct animation.",
             Callback = function() playIdleWalkPreset("Bomber Animation", "13211198049", "13211207597", Enum.AnimationPriority.Action3, nil) end
         })
         
         AnimPresetSection:Button({
             Title = "Default",
-            Desc = "Default zombie animation",
+            Desc = "Default zombie animation.",
             Callback = function() playIdleWalkPreset("Default", "180435571", "180426354", Enum.AnimationPriority.Idle, nil) end
         })
         
@@ -14657,43 +14656,43 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         
         AnimPresetSection:Button({
             Title = "Boxer",
-            Desc = "Boxing animation (click to punch)",
+            Desc = "Boxing animation (click to punch).",
             Callback = function() playIdleWalkPreset("Boxer", "124381258015151", "127477273497271", Enum.AnimationPriority.Action3, 17) end
         })
         
         AnimPresetSection:Button({
             Title = "Dracula",
-            Desc = "Dracula vampire animation",
+            Desc = "Dracula animation.",
             Callback = function() playIdleWalkPreset("Dracula", "14970033333", "15486477524", Enum.AnimationPriority.Action3, 16) end
         })
         
         AnimPresetSection:Button({
             Title = "Impaled walk",
-            Desc = "Impaled walk (slow walk)",
+            Desc = "Impaled slow walk animation.",
             Callback = function() playIdleWalkPreset("Impaled walk", "111210841378590", "139186204185685", Enum.AnimationPriority.Action3, 5) end
         })
         
         AnimPresetSection:Button({
             Title = "Red Eyes",
-            Desc = "Red eyes animation with speed boost (35)",
+            Desc = "Red eyes animation with speed boost (35).",
             Callback = function() playIdleWalkPreset("Red Eyes", "12581784105", "12581785298", Enum.AnimationPriority.Action3, 35) end
         })
         
         AnimPresetSection:Button({
             Title = "Napoleon Hands Behind",
-            Desc = "Napoleon hands behind back pose",
+            Desc = "Napoleon hands-behind-back pose.",
             Callback = function() playIdleWalkPreset("Napoleon", "103557875332543", "103557875332543", Enum.AnimationPriority.Action4, nil) end
         })
         
         AnimPresetSection:Button({
             Title = "Freezing/Cold",
-            Desc = "Cold shivering animation",
+            Desc = "Cold shivering animation.",
             Callback = function() playIdleWalkPreset("Cold", "16863977222", "16876434500", Enum.AnimationPriority.Action3, nil) end
         })
         
         AnimPresetSection:Button({
             Title = "Low Health",
-            Desc = "Injured/low health animation",
+            Desc = "Injured/low health animation.",
             Callback = function() playIdleWalkPreset("Low Health", "14970034680", "15530089342", Enum.AnimationPriority.Idle, nil) end
         })
         
@@ -14702,43 +14701,43 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         
         AnimPresetSection:Button({
             Title = "Musket Charge",
-            Desc = "Musket charging animation (speed 24)",
+            Desc = "Musket charge animation (speed 24).",
             Callback = function() playIdleWalkPreset("Musket Charge", "14292935158", "14292937831", Enum.AnimationPriority.Action3, 24) end
         })
         
         AnimPresetSection:Button({
             Title = "Greatsword Charge",
-            Desc = "Greatsword charging animation (speed 24)",
+            Desc = "Greatsword charge animation (speed 24).",
             Callback = function() playIdleWalkPreset("Greatsword Charge", "14284611111", "17406602570", Enum.AnimationPriority.Action3, 24) end
         })
         
         AnimPresetSection:Button({
             Title = "Bayonet Charge",
-            Desc = "Standard bayonet charge (speed 24)",
+            Desc = "Bayonet charge animation (speed 24).",
             Callback = function() playIdleWalkPreset("Bayonet Charge", "14284611111", "14284623849", Enum.AnimationPriority.Idle, 24) end
         })
         
         AnimPresetSection:Button({
             Title = "Fake Bayonet",
-            Desc = "Fake bayonet stance (click for stab)",
+            Desc = "Fake bayonet stance (click to stab).",
             Callback = function() playIdleWalkPreset("Fake Bayonet", "12333492041", "12333492041", Enum.AnimationPriority.Action3, 17) end
         })
         
         AnimPresetSection:Button({
             Title = "Gun Spin",
-            Desc = "Spinning gun trick (looping)",
+            Desc = "Spinning gun trick (looping).",
             Callback = function() playLoopingPreset("Gun Spin", "15827239870", 0.73) end
         })
         
         AnimPresetSection:Button({
             Title = "Elbow Strike",
-            Desc = "Elbow strike combo (looping)",
+            Desc = "Elbow strike combo (looping).",
             Callback = function() playLoopingPreset("Elbow Strike", "15345113937", 0.6) end
         })
         
         AnimPresetSection:Button({
             Title = "Skibidi Fast Slash Ahhh",
-            Desc = "Super fast slashing with spin",
+            Desc = "Super fast slash with spin.",
             Callback = function()
                 local animator, humanoid = getAnimator()
                 if not animator then return end
@@ -14777,25 +14776,25 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         
         AnimPresetSection:Button({
             Title = "Play Dead",
-            Desc = "Play dead/faint animation",
+            Desc = "Play dead/faint animation.",
             Callback = function() playOneShotPreset("Play Dead", "89945348540089", nil) end
         })
         
         AnimPresetSection:Button({
             Title = "Sad Dance",
-            Desc = "Sad dance (20 sec)",
+            Desc = "Sad dance animation (20 sec).",
             Callback = function() playOneShotPreset("Sad Dance", "14860627011", 20) end
         })
         
         AnimPresetSection:Button({
             Title = "Flying",
-            Desc = "Flying pose animation (looping)",
+            Desc = "Flying pose animation (looping).",
             Callback = function() playLoopingPreset("Flying", "110087359963835", nil) end
         })
         
         AnimPresetSection:Button({
             Title = "Headless Horseman",
-            Desc = "Headless horseman with music (speed 38)",
+            Desc = "Headless Horseman animation with music (speed 38).",
             Callback = function()
                 local animator, humanoid = getAnimator()
                 if not animator then return end
@@ -14824,7 +14823,7 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         
         AnimPresetSection:Button({
             Title = "Eating Long Stick",
-            Desc = "Eating something long (Gagging Noises)",
+            Desc = "Eating animation (gagging sounds).",
             Callback = function()
                 local animator, humanoid = getAnimator()
                 if not animator then return end
@@ -14855,19 +14854,19 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         
         AnimPresetSection:Button({
             Title = "Cross Use",
-            Desc = "Using a cross animation",
+            Desc = "Cross animation.",
             Callback = function() playOneShotPreset("Cross Use", "15210536563", nil) end
         })
         
         AnimPresetSection:Button({
             Title = "Zombie Breaking The Door",
-            Desc = "Zombie breaking door animation",
+            Desc = "Zombie breaking door animation.",
             Callback = function() playOneShotPreset("Door Breach", "15593727441", nil) end
         })
         
         AnimPresetSection:Button({
             Title = "Crawford",
-            Desc = "Crawford special animation",
+            Desc = "Crawford special animation.",
             Callback = function() playOneShotPreset("Crawford", "77859967130018", nil) end
         })
         
@@ -14876,7 +14875,7 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         
         AnimPresetSection:Button({
             Title = "Cuirassier Stabbed",
-            Desc = "Stabbed by cuirassier animation",
+            Desc = "Stabbed by Cuirassier animation.",
             Callback = function()
                 local animator, humanoid = getAnimator()
                 if not animator then return end
@@ -14923,7 +14922,7 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         
         AnimPresetSection:Button({
             Title = "Breaking Bones",
-            Desc = "Bone breaking/fracture animation",
+            Desc = "Bone breaking animation.",
             Callback = function()
                 local animator, humanoid = getAnimator()
                 if not animator then return end
@@ -14957,7 +14956,7 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         
         AnimPresetSection:Button({
             Title = "Blücher",
-            Desc = "Blücher cinematic sequence",
+            Desc = "Blücher cinematic sequence.",
             Callback = function()
                 local animator, humanoid = getAnimator()
                 if not animator then return end
@@ -15017,7 +15016,7 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         
         AnimPresetSection:Button({
             Title = "idk",
-            Desc = "idk officer cinematic sequence",
+            Desc = "Officer cinematic sequence.",
             Callback = function()
                 local animator, humanoid = getAnimator()
                 if not animator then return end
@@ -15067,7 +15066,7 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         
         AnimPresetSection:Button({
             Title = "Barry",
-            Desc = "Barry getting bitten cinematic sequence",
+            Desc = "Barry getting bitten cinematic.",
             Callback = function()
                 local animator, humanoid = getAnimator()
                 if not animator then return end
@@ -15130,7 +15129,7 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         
         OldGuardSection:Button({
             Title = "Seaman",
-            Desc = "Change class to Seaman (French Infantry)",
+            Desc = "Switch to Seaman (French Infantry).",
             Callback = function()
                 pcall(function()
                     _G.SafeFireServer(ChangeClassEvent, "Seaman", 5, "French", "Infantry")
@@ -15146,7 +15145,7 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         
         OldGuardSection:Button({
             Title = "Officer",
-            Desc = "Change class to Officer (French Infantry)",
+            Desc = "Switch to Officer (French Infantry).",
             Callback = function()
                 pcall(function()
                     _G.SafeFireServer(ChangeClassEvent, "Officer", 5, "French", "Infantry")
@@ -15162,7 +15161,7 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         
         OldGuardSection:Button({
             Title = "Musician",
-            Desc = "Change class to Musician (French Infantry)",
+            Desc = "Switch to Musician (French Infantry).",
             Callback = function()
                 pcall(function()
                     _G.SafeFireServer(ChangeClassEvent, "Musician", 5, "French", "Infantry")
@@ -15178,7 +15177,7 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         
         OldGuardSection:Button({
             Title = "LineInfantry",
-            Desc = "Change class to Line Infantry (French Infantry)",
+            Desc = "Switch to Line Infantry (French).",
             Callback = function()
                 pcall(function()
                     _G.SafeFireServer(ChangeClassEvent, "LineInfantry", 5, "French", "Infantry")
@@ -15194,7 +15193,7 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         
         OldGuardSection:Button({
             Title = "Sapper",
-            Desc = "Change class to Sapper (French Infantry)",
+            Desc = "Switch to Sapper (French Infantry).",
             Callback = function()
                 pcall(function()
                     _G.SafeFireServer(ChangeClassEvent, "Sapper", 5, "French", "Infantry")
@@ -15217,7 +15216,7 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         
         ColdStreamSection:Button({
             Title = "Seaman",
-            Desc = "Change class to Seaman (British Infantry)",
+            Desc = "Switch to Seaman (British Infantry).",
             Callback = function()
                 pcall(function()
                     _G.SafeFireServer(ChangeClassEvent, "Seaman", 4, "British", "Infantry")
@@ -15233,7 +15232,7 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         
         ColdStreamSection:Button({
             Title = "Officer",
-            Desc = "Change class to Officer (British Infantry)",
+            Desc = "Switch to Officer (British Infantry).",
             Callback = function()
                 pcall(function()
                     _G.SafeFireServer(ChangeClassEvent, "Officer", 4, "British", "Infantry")
@@ -15249,7 +15248,7 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         
         ColdStreamSection:Button({
             Title = "Musician",
-            Desc = "Change class to Musician (British Infantry)",
+            Desc = "Switch to Musician (British Infantry).",
             Callback = function()
                 pcall(function()
                     _G.SafeFireServer(ChangeClassEvent, "Musician", 4, "British", "Infantry")
@@ -15265,7 +15264,7 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         
         ColdStreamSection:Button({
             Title = "LineInfantry",
-            Desc = "Change class to Line Infantry (British Infantry)",
+            Desc = "Switch to Line Infantry (British).",
             Callback = function()
                 pcall(function()
                     _G.SafeFireServer(ChangeClassEvent, "LineInfantry", 4, "British", "Infantry")
@@ -15281,7 +15280,7 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
         
         ColdStreamSection:Button({
             Title = "Sapper",
-            Desc = "Change class to Sapper (British Infantry)",
+            Desc = "Switch to Sapper (British Infantry).",
             Callback = function()
                 pcall(function()
                     _G.SafeFireServer(ChangeClassEvent, "Sapper", 4, "British", "Infantry")
@@ -15401,7 +15400,7 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
     MovementSection:Slider({
         Title = "WalkSpeed",
         Flag = "Movement_1",
-        Desc = "Set walkspeed value",
+        Desc = "Set walk speed value.",
         Step = 1,
         Value = { Min = 16, Max = 35, Default = desiredWalkSpeed },
         Callback = function(v)
@@ -15420,7 +15419,7 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
     local ApplyWalkSpeedToggle = MovementSection:Toggle({
         Title = "WalkSpeed Freeze",
         Flag = "Movement_2",
-        Desc = "Force Walkspeed",
+        Desc = "Force walk speed.",
         Default = false,
         Callback = function(state)
             walkLoopEnabled = state
@@ -15435,8 +15434,8 @@ do -- // Misc Tab (forceful WalkSpeed loop, looped Fullbright & NoFog, removed J
             end
         end
     })
-    _G.ZentraToggleElements = _G.ZentraToggleElements or {}
-    _G.ZentraToggleElements.ApplyWalkSpeed = ApplyWalkSpeedToggle
+    _G.VelionToggleElements = _G.VelionToggleElements or {}
+    _G.VelionToggleElements.ApplyWalkSpeed = ApplyWalkSpeedToggle
 
 -- ===== FLY FEATURE (Freecam with Soul Clone) =====
 -- Freecam fly with transparent soul clone that looks where camera is looking
@@ -15836,7 +15835,7 @@ do
     FreecamToggle = MovementSection:Toggle({
         Title = "Freecam Fly",
         Flag = "Movement_Freecam",
-        Desc = "Freecam Fly to save positions.",
+        Desc = "Fly with Freecam to save positions.",
         Default = false,
         Callback = function(state)
             if state then
@@ -15853,14 +15852,14 @@ do
             end
         end
     })
-    _G.ZentraToggleElements = _G.ZentraToggleElements or {}
-    _G.ZentraToggleElements.Freecam = FreecamToggle
+    _G.VelionToggleElements = _G.VelionToggleElements or {}
+    _G.VelionToggleElements.Freecam = FreecamToggle
     
     -- Fly Speed Slider
     MovementSection:Slider({
         Title = "Fly Speed",
         Flag = "Movement_FlySpeed",
-        Desc = "Adjust freecam fly speed",
+        Desc = "Freecam fly speed.",
         Step = 1,
         Value = {
             Min = 10,
@@ -15875,7 +15874,7 @@ do
     -- Save Position Button
     MovementSection:Button({
         Title = "Save Position",
-        Desc = "Save current position. Requires Freecam to be active.",
+        Desc = "Save current position (requires Freecam).",
         Callback = function()
             saveCurrentPosition()
         end
@@ -15885,7 +15884,7 @@ do
     TeleportDropdown = MovementSection:Dropdown({
         Title = "Select Position",
         Flag = "Movement_SelectPosition",
-        Desc = "Select a saved position for Loop Teleport",
+        Desc = "Select a saved position.",
         Values = {},
         Multi = false,
         Callback = function(selected)
@@ -15908,7 +15907,7 @@ do
     LoopTeleportToggle = MovementSection:Toggle({
         Title = "Loop Teleport",
         Flag = "Movement_LoopTeleport",
-        Desc = "Continuously teleport to selected position",
+        Desc = "Loop teleport to selected position.",
         Default = false,
         Callback = function(state)
             if state then
@@ -15930,12 +15929,12 @@ do
             end
         end
     })
-    _G.ZentraToggleElements.LoopTeleport = LoopTeleportToggle
+    _G.VelionToggleElements.LoopTeleport = LoopTeleportToggle
     
     -- Clear Saved Positions Button
     MovementSection:Button({
         Title = "Clear All Saved Positions",
-        Desc = "Delete all saved teleport positions",
+        Desc = "Delete all saved positions.",
         Callback = function()
             stopTeleportLoop()
             pcall(function() LoopTeleportToggle:SetValue(false) end)
@@ -15962,7 +15961,7 @@ do
     local function getMusicSound()
         if not currentMusicSound or not currentMusicSound.Parent then
             currentMusicSound = Instance.new("Sound")
-            currentMusicSound.Name = "BackgroundMusic_Zentra"
+            currentMusicSound.Name = "BackgroundMusic_Velion"
             currentMusicSound.Parent = game:GetService("SoundService")
             currentMusicSound.Looped = true
             currentMusicSound.Volume = musicVolume
@@ -15999,7 +15998,7 @@ do
 
     MusicPresetsSection:Dropdown({
         Title = "Select Preset",
-        Desc = "Choose a preset track to play",
+        Desc = "Choose a preset track.",
         Flag = "BGMusic_Preset",
         Multi = false,
         Values = presetDropdownValues,
@@ -16012,7 +16011,7 @@ do
 
     MusicPresetsSection:Button({
         Title = "▶️ Play Preset",
-        Desc = "Play the selected preset track",
+        Desc = "Play selected track.",
         Callback = function()
             if selectedPreset then
                 pcall(function()
@@ -16032,7 +16031,7 @@ do
 
     MusicPresetsSection:Button({
         Title = "⏹️ Stop All Music",
-        Desc = "Stop all sounds playing in the game",
+        Desc = "Stop all sounds in the game.",
         Callback = function()
             pcall(function()
                 if currentMusicSound and currentMusicSound.Parent then
@@ -16176,13 +16175,13 @@ do
     -- Info
     BackgroundMusicSection:Paragraph({
         Title = "How to Use",
-        Desc = "Click 'Scan Game Audio' to load (prevents lag on startup)"
+        Desc = "Click Scan first to load audio."
     })
     
     -- Scan button
     BackgroundMusicSection:Button({
         Title = "Scan Game Audio",
-        Desc = "Scan game for music/sounds (runs in background)",
+        Desc = "Scan game audio (runs in background).",
         Callback = function()
             WindUI:Notify({Title = "Background Music", Content = "Scanning...", Duration = 2, Icon = "search"})
             task.spawn(function()
@@ -16205,7 +16204,7 @@ do
     -- Search
     BackgroundMusicSection:Input({
         Title = "Search Audio",
-        Desc = "Filter audio by name or ID",
+        Desc = "Filter audio by name or ID.",
         Placeholder = "Type to search...",
         Callback = function(text)
             musicSearchQuery = text
@@ -16225,7 +16224,7 @@ do
     -- Dropdown
     musicDropdown = BackgroundMusicSection:Dropdown({
         Title = "Select Audio",
-        Desc = "Choose audio to play",
+        Desc = "Choose audio to play.",
         Flag = "BackgroundMusic_Select",
         Multi = false,
         Values = {"Click 'Scan Game Audio' to load"},
@@ -16247,7 +16246,7 @@ do
     -- Selected audio info
     BackgroundMusicSection:Paragraph({
         Title = "Selected Audio",
-        Desc = "No audio selected"
+        Desc = "No audio selected."
     })
 
     -- Custom ID input
@@ -16255,12 +16254,12 @@ do
 
     BackgroundMusicSection:Paragraph({
         Title = "Custom Audio ID",
-        Desc = "Enter any Roblox audio asset ID to play it directly"
+        Desc = "Enter a Roblox audio asset ID."
     })
 
     BackgroundMusicSection:Input({
         Title = "Audio ID",
-        Desc = "Paste a Roblox audio asset ID (numbers only)",
+        Desc = "Paste audio ID (numbers only).",
         Placeholder = "e.g. 1836635087",
         Callback = function(text)
             customAudioId = text:match("^%s*(.-)%s*$") -- trim whitespace
@@ -16269,7 +16268,7 @@ do
 
     BackgroundMusicSection:Button({
         Title = "▶️ Play Custom ID",
-        Desc = "Play the audio ID entered above",
+        Desc = "Play the entered audio ID.",
         Callback = function()
             local id = customAudioId:match("rbxassetid://(%d+)") or customAudioId:match("^(%d+)$")
             if id and id ~= "" then
@@ -16292,7 +16291,7 @@ do
     BackgroundMusicSection:Toggle({
         Title = "Enable Background Music",
         Flag = "BGMusic_Enable",
-        Desc = "Play selected background music",
+        Desc = "Play selected background music.",
         Default = false,
         Callback = function(state)
             musicEnabled = state
@@ -16315,7 +16314,7 @@ do
     BackgroundMusicSection:Slider({
         Title = "Volume",
         Flag = "BGMusic_Volume",
-        Desc = "Adjust volume (0-100%)",
+        Desc = "Adjust volume (0-100%).",
         Step = 1,
         Value = { Min = 0, Max = 100, Default = 50 },
         Callback = function(value)
@@ -16326,7 +16325,7 @@ do
     -- Pause/Resume
     BackgroundMusicSection:Button({
         Title = "⏸️ Pause",
-        Desc = "Pause music",
+        Desc = "Pause music.",
         Callback = function()
             if currentMusicSound and currentMusicSound.Parent then
                 currentMusicSound:Pause()
@@ -16337,7 +16336,7 @@ do
     
     BackgroundMusicSection:Button({
         Title = "▶️ Resume",
-        Desc = "Resume music",
+        Desc = "Resume music.",
         Callback = function()
             if currentMusicSound and currentMusicSound.Parent then
                 currentMusicSound:Resume()
@@ -16348,7 +16347,7 @@ do
 
     BackgroundMusicSection:Button({
         Title = "📋 Copy Audio ID",
-        Desc = "Copy the current audio ID to clipboard",
+        Desc = "Copy current audio ID.",
         Callback = function()
             if selectedAudioData and selectedAudioData.id then
                 setclipboard(tostring(selectedAudioData.id))
@@ -16420,7 +16419,7 @@ end
 local AutoRemoveHorsesToggle = VisualSection:Toggle({
     Title = "Auto Remove Horses (Performance boost)",
     Flag = "Visual_AutoRemoveHorses",
-    Desc = "Removes the horses to reduce lag, mainly on westminster.",
+    Desc = "Remove horses to reduce lag (Westminster).",
     Default = false,
     Callback = function(state)
         AutoRemoveHorsesEnabled = state
@@ -16462,8 +16461,8 @@ local AutoRemoveHorsesToggle = VisualSection:Toggle({
         end
     end
 })
-_G.ZentraToggleElements = _G.ZentraToggleElements or {}
-_G.ZentraToggleElements.AutoRemoveHorses = AutoRemoveHorsesToggle
+_G.VelionToggleElements = _G.VelionToggleElements or {}
+_G.VelionToggleElements.AutoRemoveHorses = AutoRemoveHorsesToggle
 
 -- === Simplified Visuals: Fullbright & NoFog (IMPROVED & OPTIMIZED) ===
 local Lighting = game:GetService("Lighting")
@@ -16645,7 +16644,7 @@ end
 VisualSection:Toggle({
     Title = "Fullbright",
     Flag = "Visual_1",
-    Desc = "Enable fullbright lighting",
+    Desc = "Enable fullbright lighting.",
     Default = false,
     Callback = function(state)
         local success, err = pcall(function()
@@ -16674,7 +16673,7 @@ VisualSection:Toggle({
 VisualSection:Toggle({
     Title = "No Fog",
     Flag = "Visual_2",
-    Desc = "Remove fog and atmospheres (auto-reapplies on map change)",
+    Desc = "Remove fog and atmosphere effects.",
     Default = false,
     Callback = function(state)
         local success, err = pcall(function()
@@ -16816,7 +16815,7 @@ end)
 VisualSection:Toggle({
     Title = "FOV Changer",
     Flag = "Visual_FOVChanger",
-    Desc = "Change your camera field of view",
+    Desc = "Change camera FOV.",
     Default = false,
     Callback = function(state)
         fovChangerEnabled = state
@@ -16835,7 +16834,7 @@ VisualSection:Toggle({
 VisualSection:Slider({
     Title = "FOV Value",
     Flag = "Visual_FOVValue",
-    Desc = "Adjust field of view (default: 70)",
+    Desc = "FOV value (default: 70).",
     Value = { Min = 30, Max = 120, Default = 70 },
     Callback = function(value)
         currentFOV = value
@@ -16883,7 +16882,7 @@ end
 VisualSection:Toggle({
     Title = "Infinite Zoom",
     Flag = "Visual_InfiniteZoom",
-    Desc = "Remove zoom distance limits",
+    Desc = "Remove camera zoom limits.",
     Default = false,
     Callback = function(state)
         infiniteZoomEnabled = state
@@ -16962,7 +16961,7 @@ end
 VisualSection:Toggle({
     Title = "FPS Booster",
     Flag = "Visual_FPSBooster",
-    Desc = "Obliterates textures, lighting & particles for maximum FPS",
+    Desc = "Remove textures, lighting & particles for max FPS.",
     Icon = "zap",
     Default = false,
     Callback = function(state)
@@ -17208,7 +17207,7 @@ end
     local NoFallDamageToggle = MovementSection:Toggle({
         Title = "No Fall Damage",
         Flag = "ServerMods_NoFallDamage",
-        Desc = "Removes fall damage",
+        Desc = "No fall damage.",
         Default = false,
         Callback = function(state)
             noFallDamageEnabled = state
@@ -17243,8 +17242,8 @@ end
             end
         end
     })
-    _G.ZentraToggleElements = _G.ZentraToggleElements or {}
-    _G.ZentraToggleElements.NoFallDamage = NoFallDamageToggle
+    _G.VelionToggleElements = _G.VelionToggleElements or {}
+    _G.VelionToggleElements.NoFallDamage = NoFallDamageToggle
 
     -- === Anti Break Legs ===
     local antiBreakLegsEnabled = false
@@ -17310,7 +17309,7 @@ end
     local AntiBreakLegsToggle = MovementSection:Toggle({
         Title = "Anti Break Legs",
         Flag = "ServerMods_AntiBreakLegs",
-        Desc = "Prevents broken legs",
+        Desc = "Prevent broken legs.",
         Default = false,
         Callback = function(state)
             antiBreakLegsEnabled = state
@@ -17335,12 +17334,64 @@ end
             end
         end
     })
-    _G.ZentraToggleElements.AntiBreakLegs = AntiBreakLegsToggle
+    _G.VelionToggleElements.AntiBreakLegs = AntiBreakLegsToggle
+
+    -- === Invisible ===
+    local invisibleEnabled = false
+    local invisibleThread = nil
+
+    local function startInvisible()
+        invisibleThread = task.spawn(function()
+            -- Disable replicator to hide character from server
+            pcall(function() setfflag("NextGenReplicatorEnabledWrite4", "false") end)
+            task.wait(2)
+            -- Re-enable replicator after 2 seconds
+            pcall(function() setfflag("NextGenReplicatorEnabledWrite4", "true") end)
+        end)
+    end
+
+    local function stopInvisible()
+        if invisibleThread then
+            pcall(task.cancel, invisibleThread)
+            invisibleThread = nil
+        end
+        -- Reset replicator back to normal
+        pcall(function() setfflag("NextGenReplicatorEnabledWrite4", "true") end)
+    end
+
+    local InvisibleToggle = MovementSection:Toggle({
+        Title = "Invisible",
+        Flag = "Movement_Invisible",
+        Desc = "Temporarily hide your character from other players.",
+        Icon = "eye-off",
+        Default = false,
+        Callback = function(state)
+            invisibleEnabled = state
+            if state then
+                startInvisible()
+                WindUI:Notify({
+                    Title = "Movement",
+                    Content = "Invisible enabled.",
+                    Duration = 2,
+                    Icon = "eye-off",
+                })
+            else
+                stopInvisible()
+                WindUI:Notify({
+                    Title = "Movement",
+                    Content = "Invisible disabled.",
+                    Duration = 2,
+                    Icon = "eye",
+                })
+            end
+        end
+    })
+    _G.VelionToggleElements.Invisible = InvisibleToggle
 
     -- === Baguette Purchase ===
     ServerModifiersSection:Button({
         Title = "Get Baguette",
-        Desc = "Purchase the Baguette item from the server",
+        Desc = "Purchase Baguette from the server.",
         Callback = function()
             pcall(function()
                 local args = {
@@ -17360,7 +17411,7 @@ end
     -- === Voivode Purchase ===
     ServerModifiersSection:Button({
         Title = "Get Voivode",
-        Desc = "Purchase the Voivode item from the server",
+        Desc = "Purchase Voivode from the server.",
         Callback = function()
             pcall(function()
                 _G.SafeFireServer(game:GetService("ReplicatedStorage").Events.Customize.PurchaseEvent, "Voivode")
@@ -17377,7 +17428,7 @@ end
     -- === Iron Stake Purchase ===
     ServerModifiersSection:Button({
         Title = "Get Iron Stake",
-        Desc = "Purchase the Iron Stake item from the server",
+        Desc = "Purchase Iron Stake from the server.",
         Callback = function()
             pcall(function()
                 _G.SafeFireServer(game:GetService("ReplicatedStorage").Events.Customize.PurchaseEvent, "Iron Stake")
@@ -17763,7 +17814,7 @@ end
         if char then
             local hrp = char:FindFirstChild("HumanoidRootPart")
             if hrp then
-                local autoLookGyro = hrp:FindFirstChild("ZentraAutoLookGyro")
+                local autoLookGyro = hrp:FindFirstChild("VelionAutoLookGyro")
                 if autoLookGyro then
                     autoLookGyro:Destroy()
                 end
@@ -17801,7 +17852,7 @@ end
     local FlyToggle = MovementSection:Toggle({
         Title = "Fly",
         Flag = "ServerMods_Fly",
-        Desc = "Fly Bypass.",
+        Desc = "Fly without being detected.",
         Default = false,
         Callback = function(state)
             FlyEnabled = state
@@ -17809,8 +17860,8 @@ end
             if state then
                 startFly()
                 -- Unlock Noclip toggle when Fly is enabled
-                if _G.ZentraToggleElements and _G.ZentraToggleElements.NoclipBypass then
-                    pcall(function() _G.ZentraToggleElements.NoclipBypass:Unlock() end)
+                if _G.VelionToggleElements and _G.VelionToggleElements.NoclipBypass then
+                    pcall(function() _G.VelionToggleElements.NoclipBypass:Unlock() end)
                 end
                 WindUI:Notify({
                     Title = "Server Modifiers",
@@ -17821,14 +17872,14 @@ end
             else
                 stopFly()
                 -- Force stop noclip directly (don't just set toggle - call the function)
-                if _G.ZentraStopNoclip then
-                    pcall(_G.ZentraStopNoclip)
+                if _G.VelionStopNoclip then
+                    pcall(_G.VelionStopNoclip)
                 end
                 -- Also update the toggle UI to reflect disabled state
-                if _G.ZentraToggleElements and _G.ZentraToggleElements.NoclipBypass then
+                if _G.VelionToggleElements and _G.VelionToggleElements.NoclipBypass then
                     pcall(function()
-                        _G.ZentraToggleElements.NoclipBypass:Set(false)
-                        _G.ZentraToggleElements.NoclipBypass:Lock()
+                        _G.VelionToggleElements.NoclipBypass:Set(false)
+                        _G.VelionToggleElements.NoclipBypass:Lock()
                     end)
                 end
                 WindUI:Notify({
@@ -17842,15 +17893,15 @@ end
     })
     
     -- Register Fly toggle for mobile button and keybinds
-    _G.ZentraToggleElements = _G.ZentraToggleElements or {}
-    _G.ZentraToggleElements.Fly = FlyToggle
+    _G.VelionToggleElements = _G.VelionToggleElements or {}
+    _G.VelionToggleElements.Fly = FlyToggle
 
     -- === Visual Noclip Bypass v3 (CFrame Fly Method) ===
     -- Based on cframefly method: anchor Head, move via CFrame (client-only)
     -- Server doesn't see movement until we teleport on exit
     
     local NoclipEnabled = false
-    _G.ZentraNoclipEnabled = false -- Global reference for keybinds
+    _G.VelionNoclipEnabled = false -- Global reference for keybinds
     local noclipCFlyConn = nil
     local noclipTeleportConn = nil
     local noclipCollisionConn = nil
@@ -18271,7 +18322,7 @@ end
             if not FlyEnabled then
                 -- Fly was disabled but noclip is still on - force disable noclip
                 NoclipEnabled = false
-                _G.ZentraNoclipEnabled = false
+                _G.VelionNoclipEnabled = false
                 return
             end
             
@@ -18296,7 +18347,7 @@ end
     -- Make stopNoclip global so fly toggle can call it directly
     local function stopNoclip()
         NoclipEnabled = false
-        _G.ZentraNoclipEnabled = false
+        _G.VelionNoclipEnabled = false
         _G.NoclipBypassEnabled = false
         _G.NoclipLastValidPosition = nil
         
@@ -18352,7 +18403,7 @@ end
     end
     
     -- Expose globally so fly toggle can call it
-    _G.ZentraStopNoclip = stopNoclip
+    _G.VelionStopNoclip = stopNoclip
 
     -- Re-setup on respawn
     LocalPlayer.CharacterAdded:Connect(function(newChar)
@@ -18371,12 +18422,12 @@ end
     local NoclipToggle = MovementSection:Toggle({
         Title = "Fly Noclip Bypass",
         Flag = "ServerMods_NoclipBypass",
-        Desc = "Fly through walls",
+        Desc = "Fly through walls.",
         Default = false,
         Locked = true,
         Callback = function(state)
             NoclipEnabled = state
-            _G.ZentraNoclipEnabled = state -- Update global reference for keybinds
+            _G.VelionNoclipEnabled = state -- Update global reference for keybinds
             
             if state then
                 startNoclip()
@@ -18397,13 +18448,13 @@ end
             end
         end
     })
-    _G.ZentraToggleElements.NoclipBypass = NoclipToggle
+    _G.VelionToggleElements.NoclipBypass = NoclipToggle
 
     local FlyMobileButtonsEnabled = false
     MovementSection:Toggle({
         Title = "Fly Mobile Buttons",
         Flag = "ServerMods_FlyMobileButtons",
-        Desc = "Show buttons on screen for mobile fly controls",
+        Desc = "Show fly controls on screen (mobile).",
         Default = false,
         Callback = function(state)
             FlyMobileButtonsEnabled = state
@@ -18430,7 +18481,7 @@ end
     MovementSection:Slider({
         Title = "Fly Speed",
         Flag = "ServerMods_FlySpeed",
-        Desc = "Adjust flight speed",
+        Desc = "Flight speed.",
         Step = 1,
         Value = { Min = 10, Max = 35, Default = 25 },
         Callback = function(v)
@@ -18440,7 +18491,7 @@ end
 
     -- === WALK NOCLIP (Independent from Fly) ===
     local WalkNoclipEnabled = false
-    _G.ZentraWalkNoclipEnabled = false
+    _G.VelionWalkNoclipEnabled = false
     local walkNoclipConn = nil
     local walkNoclipCollisionConn = nil
     local walkNoclipTeleportConn = nil
@@ -18816,7 +18867,7 @@ end
     
     local function stopWalkNoclip()
         WalkNoclipEnabled = false
-        _G.ZentraWalkNoclipEnabled = false
+        _G.VelionWalkNoclipEnabled = false
         _G.WalkNoclipBypassEnabled = false
         _G.WalkNoclipLastValidPosition = nil
         
@@ -18871,7 +18922,7 @@ end
         walkServerPosition = nil
     end
     
-    _G.ZentraStopWalkNoclip = stopWalkNoclip
+    _G.VelionStopWalkNoclip = stopWalkNoclip
     
     -- Re-setup on respawn (bypass mechanic)
     LocalPlayer.CharacterAdded:Connect(function(newChar)
@@ -18891,11 +18942,11 @@ end
     local WalkNoclipToggle = MovementSection:Toggle({
         Title = "Walk Noclip Bypass",
         Flag = "ServerMods_WalkNoclipBypass",
-        Desc = "Fly through walls (doesn't require Fly enabled, Kinda unstable)",
+        Desc = "Fly through walls (no Fly required, unstable).",
         Default = false,
         Callback = function(state)
             WalkNoclipEnabled = state
-            _G.ZentraWalkNoclipEnabled = state
+            _G.VelionWalkNoclipEnabled = state
             
             if state then
                 startWalkNoclip()
@@ -18916,13 +18967,13 @@ end
             end
         end
     })
-    _G.ZentraToggleElements.WalkNoclipBypass = WalkNoclipToggle
+    _G.VelionToggleElements.WalkNoclipBypass = WalkNoclipToggle
     
     -- Walk Noclip Speed (controls movement speed in all directions)
     MovementSection:Slider({
         Title = "Walk Noclip Speed",
         Flag = "ServerMods_WalkNoclipSpeed",
-        Desc = "Speed when flying through walls",
+        Desc = "Speed while flying through walls.",
         Step = 1,
         Value = { Min = 8, Max = 35, Default = 16 },
         Callback = function(v)
@@ -18933,7 +18984,7 @@ end
     -- === Server utilities ===
     ServerSection:Button({
         Title = "Rejoin Server",
-        Desc = "Leave and rejoin the same game",
+        Desc = "Leave and rejoin the same server.",
         Callback = function()
             WindUI:Notify({ Title = "Server", Content = "Rejoining server...", Duration = 3, Icon = "refresh-cw" })
             pcall(function() TeleportService:Teleport(game.PlaceId, LocalPlayer) end)
@@ -18942,7 +18993,7 @@ end
 
     ServerSection:Button({
         Title = "Server Hop",
-        Desc = "Switch to a different server",
+        Desc = "Hop to a different server.",
         Callback = function()
             WindUI:Notify({ Title = "Server", Content = "Finding new server...", Duration = 3, Icon = "server" })
             local servers = {}
@@ -19128,7 +19179,7 @@ do -- // Maps Hacks Tab
     local AutoRepairBridgeToggle = BerezinaSection:Toggle({
         Title = "Auto Repair Bridge",
         Flag = "Berezina_AutoRepairBridge",
-        Desc = "Automatically repairs the bridge.",
+        Desc = "Auto repair the bridge.",
         Default = false,
         Callback = function(state)
             autoRepairBridgeEnabled = state
@@ -19157,8 +19208,8 @@ do -- // Maps Hacks Tab
             end
         end
     })
-    _G.ZentraToggleElements = _G.ZentraToggleElements or {}
-    _G.ZentraToggleElements.AutoRepairBridge = AutoRepairBridgeToggle
+    _G.VelionToggleElements = _G.VelionToggleElements or {}
+    _G.VelionToggleElements.AutoRepairBridge = AutoRepairBridgeToggle
     
     -- Auto Grab Log (finds nearest log)
     local autoGrabLogEnabled = false
@@ -19222,7 +19273,7 @@ do -- // Maps Hacks Tab
     local AutoGrabLogToggle = BerezinaSection:Toggle({
         Title = "Auto Grab Log",
         Flag = "Berezina_AutoGrabLog",
-        Desc = "Automatically grabs the nearest log.",
+        Desc = "Auto grab the nearest log.",
         Default = false,
         Callback = function(state)
             autoGrabLogEnabled = state
@@ -19254,7 +19305,7 @@ do -- // Maps Hacks Tab
             end
         end
     })
-    _G.ZentraToggleElements.AutoGrabLog = AutoGrabLogToggle
+    _G.VelionToggleElements.AutoGrabLog = AutoGrabLogToggle
     
     -- Auto Place Log (FIXED - no more memory leak from GetDescendants)
     local autoPlaceLogEnabled = false
@@ -19364,7 +19415,7 @@ do -- // Maps Hacks Tab
     local AutoPlaceLogToggle = BerezinaSection:Toggle({
         Title = "Auto Place Log",
         Flag = "Berezina_AutoPlaceLog",
-        Desc = "Automatically places logs on nearest bridge spot.",
+        Desc = "Auto place logs on the bridge.",
         Default = false,
         Callback = function(state)
             autoPlaceLogEnabled = state
@@ -19404,7 +19455,7 @@ do -- // Maps Hacks Tab
             end
         end
     })
-    _G.ZentraToggleElements.AutoPlaceLog = AutoPlaceLogToggle
+    _G.VelionToggleElements.AutoPlaceLog = AutoPlaceLogToggle
     
     -- Character respawn cleanup
     LocalPlayer.CharacterAdded:Connect(function()
@@ -19905,7 +19956,7 @@ do -- // Maps Hacks Tab
     local RoundshotESPToggle = VardohusSection:Toggle({
         Title = "12 lb. Roundshots ESP",
         Flag = "Vardohus_RoundshotESP",
-        Desc = "Shows red ESP for 12 lb. Roundshots (ammunition for cannon)",
+        Desc = "Red ESP for 12 lb. Roundshots (cannon ammo).",
         Icon = "box",
         Default = false,
         Callback = function(state)
@@ -19952,13 +20003,13 @@ do -- // Maps Hacks Tab
             end
         end
     })
-    _G.ZentraToggleElements.RoundshotESP = RoundshotESPToggle
+    _G.VelionToggleElements.RoundshotESP = RoundshotESPToggle
     
     -- Swab ESP Toggle
     local SwabESPToggle = VardohusSection:Toggle({
         Title = "Swab ESP (Yellow)",
         Flag = "Vardohus_SwabESP",
-        Desc = "Shows yellow ESP for Swab items.",
+        Desc = "Yellow ESP for Swab items.",
         Icon = "droplet",
         Default = false,
         Callback = function(state)
@@ -20005,7 +20056,7 @@ do -- // Maps Hacks Tab
             end
         end
     })
-    _G.ZentraToggleElements.SwabESP = SwabESPToggle
+    _G.VelionToggleElements.SwabESP = SwabESPToggle
     
     -- Cleanup on respawn
     LocalPlayer.CharacterAdded:Connect(function()
@@ -20064,7 +20115,7 @@ do -- // Maps Hacks Tab
     SaintPetersburgSection:Dropdown({
         Title = "Supply Item",
         Flag = "StPete_SupplyItem",
-        Desc = "Select the item to purchase from Hobo's Shop even when he isn't even there.",
+        Desc = "Select item to buy from Hobo's Shop.",
         Values = STPETE_ITEMS,
         Value = "LampLighter",
         Multi = false,
@@ -20075,7 +20126,7 @@ do -- // Maps Hacks Tab
 
     SaintPetersburgSection:Button({
         Title = "Buy Supply",
-        Desc = "Purchases the selected item",
+        Desc = "Purchase selected item.",
         Icon = "shopping-cart",
         Callback = function()
             if not selectedSupply or selectedSupply == "" then
@@ -20283,7 +20334,7 @@ do -- // PVP Tab
     local PVPMeleeToggle = PVPSection:Toggle({
         Title = "PVP Kill Aura",
         Flag = "PVP_MeleeKillAura",
-        Desc = "Automatically attacks nearby enemy players with melee",
+        Desc = "Auto melee attack nearby enemy players.",
         Default = false,
         Callback = function(state)
             pvpMeleeEnabled = state
@@ -20304,7 +20355,7 @@ do -- // PVP Tab
             end
         end
     })
-    _G.ZentraToggleElements.PVPMelee = PVPMeleeToggle
+    _G.VelionToggleElements.PVPMelee = PVPMeleeToggle
     
     -- PVP Kill Aura (Bayonet)
     local pvpBayonetEnabled = false
@@ -20381,7 +20432,7 @@ do -- // PVP Tab
     local PVPBayonetToggle = PVPSection:Toggle({
         Title = "PVP Kill Aura Bayonet",
         Flag = "PVP_BayonetKillAura",
-        Desc = "Automatically attacks nearby enemy players with bayonet",
+        Desc = "Auto bayonet attack nearby enemy players.",
         Default = false,
         Callback = function(state)
             pvpBayonetEnabled = state
@@ -20402,12 +20453,12 @@ do -- // PVP Tab
             end
         end
     })
-    _G.ZentraToggleElements.PVPBayonet = PVPBayonetToggle
+    _G.VelionToggleElements.PVPBayonet = PVPBayonetToggle
     
     -- Shared PVP Settings Sliders
     PVPSection:Slider({
         Title = "PVP Range",
-        Desc = "Attack range for both Melee and Bayonet Kill Aura",
+        Desc = "Attack range for Melee and Bayonet Kill Aura.",
         Flag = "PVP_Range",
         Step = 1,
         Value = { Min = 5, Max = 30, Default = PVP_RANGE },
@@ -20418,7 +20469,7 @@ do -- // PVP Tab
     
     PVPSection:Slider({
         Title = "PVP Delay",
-        Desc = "Delay between attacks",
+        Desc = "Delay between attacks.",
         Flag = "PVP_Delay",
         Step = 0.01,
         Value = { Min = 0.01, Max = 0.5, Default = PVP_DELAY },
@@ -20429,7 +20480,7 @@ do -- // PVP Tab
     
     PVPSection:Slider({
         Title = "PVP Multi-Target",
-        Desc = "Number of players to attack per swing",
+        Desc = "Players hit per swing.",
         Flag = "PVP_MultiTarget",
         Step = 1,
         Value = { Min = 1, Max = 10, Default = PVP_MULTI_TARGET },
@@ -20494,7 +20545,7 @@ do -- // PVP Tab
     PVP_WhitelistDropdown = PVPSection:Dropdown({
         Title = "PVP Whitelist",
         Flag = "PVP_Whitelist",
-        Desc = "Players who won't be attacked by any PVP feature",
+        Desc = "Players who won't be attacked.",
         Values = getPVPWhitelistPlayers(),
         Value = {},
         Multi = true,
@@ -20637,7 +20688,7 @@ do -- // PVP Tab
     local GodTeleportToggle = GodModeSection:Toggle({
         Title = "Orbit Teleport",
         Flag = "PVP_GodTeleport",
-        Desc = "Orbits random enemy players and floats around them",
+        Desc = "Orbit random enemy players.",
         Default = false,
         Callback = function(state)
             godTeleportEnabled = state
@@ -20665,7 +20716,7 @@ do -- // PVP Tab
             end
         end
     })
-    _G.ZentraToggleElements.GodTeleport = GodTeleportToggle
+    _G.VelionToggleElements.GodTeleport = GodTeleportToggle
     
     -- Character respawn cleanup - PVP Kill Auras use Heartbeat connections, no cleanup needed
     -- They automatically handle dead/missing characters gracefully
@@ -21150,7 +21201,7 @@ do -- // Keybinds and UI Tab
                 }):Play()
                 
                 if isHolding and not settingsOpen and os.clock() - holdStart < 0.5 then
-                    local toggle = _G.ZentraToggleElements and _G.ZentraToggleElements[toggleKey]
+                    local toggle = _G.VelionToggleElements and _G.VelionToggleElements[toggleKey]
                     if toggle and toggle.Set then
                         local currentState = getStateFunc and getStateFunc() or false
                         toggle:Set(not currentState)
@@ -21249,18 +21300,18 @@ do -- // Keybinds and UI Tab
 
     KeybindsSection:Paragraph({
         Title = "How to use",
-        Desc = "Click An Keybind Button And Bind A Key, On Mobile Ui Click The Toggle And A Ui Will Pop Up And You Can Use It To Toggle While Not In The Ui, Hold the button if you want to see the settings."
+        Desc = "Click a keybind button then press your key. Mobile: tap the toggle to set a button. Hold to view settings."
     })
 
     -- Head Hit Keybind
     KeybindsSection:Keybind({
         Title = "Head Lock",
         Flag = "Keybind_HeadHit",
-        Desc = "Toggle Head Hit feature",
+        Desc = "Toggle Head Hit.",
         Value = "",
         Callback = function()
             pcall(function()
-                local toggle = _G.ZentraToggleElements and _G.ZentraToggleElements.HeadHit
+                local toggle = _G.VelionToggleElements and _G.VelionToggleElements.HeadHit
                 if toggle then
                     toggle:Set(not HeadHitEnabled)
                 end
@@ -21270,7 +21321,7 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Toggle({
         Title = "Head Hit Button UI",
         Flag = "ButtonUI_HeadHit",
-        Desc = "Create mobile button for Head Hit",
+        Desc = "Mobile button for Head Hit.",
         Default = false,
         Callback = function(v)
             if v then
@@ -21285,11 +21336,11 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Keybind({
         Title = "Auto Jump",
         Flag = "Keybind_AutoJump",
-        Desc = "Toggle Auto Jump feature",
+        Desc = "Toggle Auto Jump.",
         Value = "",
         Callback = function()
             pcall(function()
-                local toggle = _G.ZentraToggleElements and _G.ZentraToggleElements.AutoJump
+                local toggle = _G.VelionToggleElements and _G.VelionToggleElements.AutoJump
                 if toggle then
                     local LocalPlayer = game:GetService("Players").LocalPlayer
                     local currentState = LocalPlayer:GetAttribute("AutoJumpEnabled") or false
@@ -21301,7 +21352,7 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Toggle({
         Title = "Auto Jump Button UI",
         Flag = "ButtonUI_AutoJump",
-        Desc = "Create mobile button for Auto Jump",
+        Desc = "Mobile button for Auto Jump.",
         Default = false,
         Callback = function(v)
             if v then
@@ -21318,11 +21369,11 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Keybind({
         Title = "Hitbox Expander",
         Flag = "Keybind_HitboxExpander",
-        Desc = "Toggle Hitbox Expander feature",
+        Desc = "Toggle Hitbox Expander.",
         Value = "",
         Callback = function()
             pcall(function()
-                local toggle = _G.ZentraToggleElements and _G.ZentraToggleElements.HitboxExpander
+                local toggle = _G.VelionToggleElements and _G.VelionToggleElements.HitboxExpander
                 if toggle then
                     toggle:Set(not hitboxEnabled)
                 end
@@ -21332,7 +21383,7 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Toggle({
         Title = "Hitbox Expander Button UI",
         Flag = "ButtonUI_HitboxExpander",
-        Desc = "Create mobile button for Hitbox Expander",
+        Desc = "Mobile button for Hitbox Expander.",
         Default = false,
         Callback = function(v)
             if v then
@@ -21347,11 +21398,11 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Keybind({
         Title = "Shove Hitbox",
         Flag = "Keybind_ShoveHitbox",
-        Desc = "Toggle Shove Hitbox Expander feature",
+        Desc = "Toggle Shove Hitbox.",
         Value = "",
         Callback = function()
             pcall(function()
-                local toggle = _G.ZentraToggleElements and _G.ZentraToggleElements.ShoveHitbox
+                local toggle = _G.VelionToggleElements and _G.VelionToggleElements.ShoveHitbox
                 if toggle then
                     toggle:Set(not ShoveHitboxExpanderEnabled)
                 end
@@ -21361,7 +21412,7 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Toggle({
         Title = "Shove Hitbox Button UI",
         Flag = "ButtonUI_ShoveHitbox",
-        Desc = "Create mobile button for Shove Hitbox",
+        Desc = "Mobile button for Shove Hitbox.",
         Default = false,
         Callback = function(v)
             if v then
@@ -21376,11 +21427,11 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Keybind({
         Title = "Auto Parry Sapper",
         Flag = "Keybind_AutoParrySapper",
-        Desc = "Toggle Auto Parry Sapper feature",
+        Desc = "Toggle Auto Parry Sapper.",
         Value = "",
         Callback = function()
             pcall(function()
-                local toggle = _G.ZentraToggleElements and _G.ZentraToggleElements.AutoParrySapper
+                local toggle = _G.VelionToggleElements and _G.VelionToggleElements.AutoParrySapper
                 if toggle then
                     toggle:Set(not AutoParrySapperMeleeEnabled)
                 end
@@ -21390,7 +21441,7 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Toggle({
         Title = "Auto Parry Sapper Button UI",
         Flag = "ButtonUI_AutoParrySapper",
-        Desc = "Create mobile button for Auto Parry Sapper",
+        Desc = "Mobile button for Auto Parry Sapper.",
         Default = false,
         Callback = function(v)
             if v then
@@ -21405,11 +21456,11 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Keybind({
         Title = "Auto Shoot",
         Flag = "Keybind_AutoShoot",
-        Desc = "Toggle Auto Shoot feature",
+        Desc = "Toggle Auto Shoot.",
         Value = "",
         Callback = function()
             pcall(function()
-                local toggle = _G.ZentraToggleElements and _G.ZentraToggleElements.AutoShoot
+                local toggle = _G.VelionToggleElements and _G.VelionToggleElements.AutoShoot
                 if toggle then
                     toggle:Set(not USER_AUTO_SHOOT_TOGGLE)
                 end
@@ -21419,7 +21470,7 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Toggle({
         Title = "Auto Shoot Button UI",
         Flag = "ButtonUI_AutoShoot",
-        Desc = "Create mobile button for Auto Shoot",
+        Desc = "Mobile button for Auto Shoot.",
         Default = false,
         Callback = function(v)
             if v then
@@ -21434,11 +21485,11 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Keybind({
         Title = "Instant Shoot",
         Flag = "Keybind_InstantShoot",
-        Desc = "Toggle Instant Shoot feature",
+        Desc = "Toggle Instant Shoot.",
         Value = "",
         Callback = function()
             pcall(function()
-                local toggle = _G.ZentraToggleElements and _G.ZentraToggleElements.InstantShoot
+                local toggle = _G.VelionToggleElements and _G.VelionToggleElements.InstantShoot
                 if toggle then
                     toggle:Set(not INSTANT_SHOOT_ENABLED)
                 end
@@ -21448,7 +21499,7 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Toggle({
         Title = "Instant Shoot Button UI",
         Flag = "ButtonUI_InstantShoot",
-        Desc = "Create mobile button for Instant Shoot",
+        Desc = "Mobile button for Instant Shoot.",
         Default = false,
         Callback = function(v)
             if v then
@@ -21463,11 +21514,11 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Keybind({
         Title = "Use FOV",
         Flag = "Keybind_UseFov",
-        Desc = "Toggle Use FOV feature",
+        Desc = "Toggle Use FOV.",
         Value = "",
         Callback = function()
             pcall(function()
-                local toggle = _G.ZentraToggleElements and _G.ZentraToggleElements.UseFov
+                local toggle = _G.VelionToggleElements and _G.VelionToggleElements.UseFov
                 if toggle then
                     toggle:Set(not USE_FOV)
                 end
@@ -21477,7 +21528,7 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Toggle({
         Title = "Use FOV Button UI",
         Flag = "ButtonUI_UseFov",
-        Desc = "Create mobile button for Use FOV",
+        Desc = "Mobile button for Use FOV.",
         Default = false,
         Callback = function(v)
             if v then
@@ -21492,11 +21543,11 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Keybind({
         Title = "Show FOV",
         Flag = "Keybind_ShowFov",
-        Desc = "Toggle Show FOV feature",
+        Desc = "Toggle Show FOV.",
         Value = "",
         Callback = function()
             pcall(function()
-                local toggle = _G.ZentraToggleElements and _G.ZentraToggleElements.ShowFov
+                local toggle = _G.VelionToggleElements and _G.VelionToggleElements.ShowFov
                 if toggle then
                     toggle:Set(not SHOW_FOV)
                 end
@@ -21506,7 +21557,7 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Toggle({
         Title = "Show FOV Button UI",
         Flag = "ButtonUI_ShowFov",
-        Desc = "Create mobile button for Show FOV",
+        Desc = "Mobile button for Show FOV.",
         Default = false,
         Callback = function(v)
             if v then
@@ -21521,11 +21572,11 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Keybind({
         Title = "Wall Check",
         Flag = "Keybind_WallCheck",
-        Desc = "Toggle Wall Check feature",
+        Desc = "Toggle Wall Check.",
         Value = "",
         Callback = function()
             pcall(function()
-                local toggle = _G.ZentraToggleElements and _G.ZentraToggleElements.WallCheck
+                local toggle = _G.VelionToggleElements and _G.VelionToggleElements.WallCheck
                 if toggle then
                     toggle:Set(not CHECK_WALLS)
                 end
@@ -21535,7 +21586,7 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Toggle({
         Title = "Wall Check Button UI",
         Flag = "ButtonUI_WallCheck",
-        Desc = "Create mobile button for Wall Check",
+        Desc = "Mobile button for Wall Check.",
         Default = false,
         Callback = function(v)
             if v then
@@ -21550,11 +21601,11 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Keybind({
         Title = "Auto Reload",
         Flag = "Keybind_AutoReload",
-        Desc = "Toggle Auto Reload feature",
+        Desc = "Toggle Auto Reload.",
         Value = "",
         Callback = function()
             pcall(function()
-                local toggle = _G.ZentraToggleElements and _G.ZentraToggleElements.AutoReload
+                local toggle = _G.VelionToggleElements and _G.VelionToggleElements.AutoReload
                 if toggle then
                     toggle:Set(not AUTO_RELOAD_ENABLED)
                 end
@@ -21564,7 +21615,7 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Toggle({
         Title = "Auto Reload Button UI",
         Flag = "ButtonUI_AutoReload",
-        Desc = "Create mobile button for Auto Reload",
+        Desc = "Mobile button for Auto Reload.",
         Default = false,
         Callback = function(v)
             if v then
@@ -21579,11 +21630,11 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Keybind({
         Title = "Save Player",
         Flag = "Keybind_AutoSavePlayers",
-        Desc = "Toggle Auto Save Players feature",
+        Desc = "Toggle Auto Save Players.",
         Value = "",
         Callback = function()
             pcall(function()
-                local toggle = _G.ZentraToggleElements and _G.ZentraToggleElements.AutoSavePlayers
+                local toggle = _G.VelionToggleElements and _G.VelionToggleElements.AutoSavePlayers
                 if toggle then
                     toggle:Set(not AUTO_SAVE_PLAYERS_ENABLED)
                 end
@@ -21593,7 +21644,7 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Toggle({
         Title = "Auto Save Players Button UI",
         Flag = "ButtonUI_AutoSavePlayers",
-        Desc = "Create mobile button for Auto Save Players",
+        Desc = "Mobile button for Auto Save Players.",
         Default = false,
         Callback = function(v)
             if v then
@@ -21608,11 +21659,11 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Keybind({
         Title = "Kill Aura",
         Flag = "Keybind_KillAura",
-        Desc = "Toggle Kill Aura feature",
+        Desc = "Toggle Kill Aura.",
         Value = "",
         Callback = function()
             pcall(function()
-                local toggle = _G.ZentraToggleElements and _G.ZentraToggleElements.KillAura
+                local toggle = _G.VelionToggleElements and _G.VelionToggleElements.KillAura
                 if toggle then
                     toggle:Set(not KillAuraEnabled)
                 end
@@ -21622,7 +21673,7 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Toggle({
         Title = "Kill Aura Button UI",
         Flag = "ButtonUI_KillAura",
-        Desc = "Create mobile button for Kill Aura",
+        Desc = "Mobile button for Kill Aura.",
         Default = false,
         Callback = function(v)
             if v then
@@ -21637,11 +21688,11 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Keybind({
         Title = "Reach",
         Flag = "Keybind_Reach",
-        Desc = "Toggle Reach feature",
+        Desc = "Toggle Reach.",
         Value = "",
         Callback = function()
             pcall(function()
-                local toggle = _G.ZentraToggleElements and _G.ZentraToggleElements.Reach
+                local toggle = _G.VelionToggleElements and _G.VelionToggleElements.Reach
                 if toggle then
                     toggle:Set(not KillAura_HitboxExpanderEnabled)
                 end
@@ -21651,7 +21702,7 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Toggle({
         Title = "Reach Button UI",
         Flag = "ButtonUI_Reach",
-        Desc = "Create mobile button for Reach",
+        Desc = "Mobile button for Reach.",
         Default = false,
         Callback = function(v)
             if v then
@@ -21666,11 +21717,11 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Keybind({
         Title = "Auto Equip Melee",
         Flag = "Keybind_AutoEquipMelee",
-        Desc = "Toggle Auto Equip Melee feature",
+        Desc = "Toggle Auto Equip Melee.",
         Value = "",
         Callback = function()
             pcall(function()
-                local toggle = _G.ZentraToggleElements and _G.ZentraToggleElements.AutoEquipMelee
+                local toggle = _G.VelionToggleElements and _G.VelionToggleElements.AutoEquipMelee
                 if toggle then
                     toggle:Set(not KillAura_AutoEquipMelee)
                 end
@@ -21680,7 +21731,7 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Toggle({
         Title = "Auto Equip Melee Button UI",
         Flag = "ButtonUI_AutoEquipMelee",
-        Desc = "Create mobile button for Auto Equip Melee",
+        Desc = "Mobile button for Auto Equip Melee.",
         Default = false,
         Callback = function(v)
             if v then
@@ -21695,11 +21746,11 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Keybind({
         Title = "Bayonet Kill Aura",
         Flag = "Keybind_BayonetKillAura",
-        Desc = "Toggle Bayonet Kill Aura feature",
+        Desc = "Toggle Bayonet Kill Aura.",
         Value = "",
         Callback = function()
             pcall(function()
-                local toggle = _G.ZentraToggleElements and _G.ZentraToggleElements.BayonetKillAura
+                local toggle = _G.VelionToggleElements and _G.VelionToggleElements.BayonetKillAura
                 if toggle then
                     toggle:Set(not KillAura_EnableBayonet)
                 end
@@ -21709,7 +21760,7 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Toggle({
         Title = "Bayonet Kill Aura Button UI",
         Flag = "ButtonUI_BayonetKillAura",
-        Desc = "Create mobile button for Bayonet Kill Aura",
+        Desc = "Mobile button for Bayonet Kill Aura.",
         Default = false,
         Callback = function(v)
             if v then
@@ -21724,11 +21775,11 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Keybind({
         Title = "Auto Look",
         Flag = "Keybind_AutoLook",
-        Desc = "Toggle Auto Look feature",
+        Desc = "Toggle Auto Look.",
         Value = "",
         Callback = function()
             pcall(function()
-                local toggle = _G.ZentraToggleElements and _G.ZentraToggleElements.AutoLook
+                local toggle = _G.VelionToggleElements and _G.VelionToggleElements.AutoLook
                 if toggle then
                     toggle:Set(not KillAuraAutoLook)
                 end
@@ -21738,7 +21789,7 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Toggle({
         Title = "Auto Look Button UI",
         Flag = "ButtonUI_AutoLook",
-        Desc = "Create mobile button for Auto Look",
+        Desc = "Mobile button for Auto Look.",
         Default = false,
         Callback = function(v)
             if v then
@@ -21753,11 +21804,11 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Keybind({
         Title = "Shove Aura",
         Flag = "Keybind_ShoveAura",
-        Desc = "Toggle Shove Aura feature",
+        Desc = "Toggle Shove Aura.",
         Value = "",
         Callback = function()
             pcall(function()
-                local toggle = _G.ZentraToggleElements and _G.ZentraToggleElements.ShoveAura
+                local toggle = _G.VelionToggleElements and _G.VelionToggleElements.ShoveAura
                 if toggle then
                     toggle:Set(not ShoveAuraEnabled)
                 end
@@ -21767,7 +21818,7 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Toggle({
         Title = "Shove Aura Button UI",
         Flag = "ButtonUI_ShoveAura",
-        Desc = "Create mobile button for Shove Aura",
+        Desc = "Mobile button for Shove Aura.",
         Default = false,
         Callback = function(v)
             if v then
@@ -21782,11 +21833,11 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Keybind({
         Title = "WalkSpeed Freeze",
         Flag = "Keybind_ApplyWalkSpeed",
-        Desc = "Toggle Apply WalkSpeed feature",
+        Desc = "Toggle Apply WalkSpeed.",
         Value = "",
         Callback = function()
             pcall(function()
-                local toggle = _G.ZentraToggleElements and _G.ZentraToggleElements.ApplyWalkSpeed
+                local toggle = _G.VelionToggleElements and _G.VelionToggleElements.ApplyWalkSpeed
                 if toggle then
                     toggle:Set(not walkLoopEnabled)
                 end
@@ -21796,7 +21847,7 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Toggle({
         Title = "Apply WalkSpeed Button UI",
         Flag = "ButtonUI_ApplyWalkSpeed",
-        Desc = "Create mobile button for Apply WalkSpeed",
+        Desc = "Mobile button for WalkSpeed.",
         Default = false,
         Callback = function(v)
             if v then
@@ -21811,11 +21862,11 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Keybind({
         Title = "Auto Remove Horses",
         Flag = "Keybind_AutoRemoveHorses",
-        Desc = "Toggle Auto Remove Horses feature",
+        Desc = "Toggle Auto Remove Horses.",
         Value = "",
         Callback = function()
             pcall(function()
-                local toggle = _G.ZentraToggleElements and _G.ZentraToggleElements.AutoRemoveHorses
+                local toggle = _G.VelionToggleElements and _G.VelionToggleElements.AutoRemoveHorses
                 if toggle then
                     toggle:Set(not AutoRemoveHorsesEnabled)
                 end
@@ -21825,7 +21876,7 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Toggle({
         Title = "Auto Remove Horses Button UI",
         Flag = "ButtonUI_AutoRemoveHorses",
-        Desc = "Create mobile button for Auto Remove Horses",
+        Desc = "Mobile button for Remove Horses.",
         Default = false,
         Callback = function(v)
             if v then
@@ -21840,11 +21891,11 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Keybind({
         Title = "No Fall Damage",
         Flag = "Keybind_NoFallDamage",
-        Desc = "Toggle No Fall Damage feature",
+        Desc = "Toggle No Fall Damage.",
         Value = "",
         Callback = function()
             pcall(function()
-                local toggle = _G.ZentraToggleElements and _G.ZentraToggleElements.NoFallDamage
+                local toggle = _G.VelionToggleElements and _G.VelionToggleElements.NoFallDamage
                 if toggle then
                     toggle:Set(not noFallDamageEnabled)
                 end
@@ -21854,7 +21905,7 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Toggle({
         Title = "No Fall Damage Button UI",
         Flag = "ButtonUI_NoFallDamage",
-        Desc = "Create mobile button for No Fall Damage",
+        Desc = "Mobile button for No Fall Damage.",
         Default = false,
         Callback = function(v)
             if v then
@@ -21869,11 +21920,11 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Keybind({
         Title = "Fly",
         Flag = "Keybind_Fly",
-        Desc = "Toggle Fly feature",
+        Desc = "Toggle Fly.",
         Value = "",
         Callback = function()
             pcall(function()
-                local toggle = _G.ZentraToggleElements and _G.ZentraToggleElements.Fly
+                local toggle = _G.VelionToggleElements and _G.VelionToggleElements.Fly
                 if toggle then
                     toggle:Set(not FlyEnabled)
                 end
@@ -21883,7 +21934,7 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Toggle({
         Title = "Fly Button UI",
         Flag = "ButtonUI_Fly",
-        Desc = "Create mobile button for Fly",
+        Desc = "Mobile button for Fly.",
         Default = false,
         Callback = function(v)
             if v then
@@ -21898,13 +21949,13 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Keybind({
         Title = "Noclip",
         Flag = "Keybind_Noclip",
-        Desc = "Toggle Noclip feature (requires Fly enabled)",
+        Desc = "Toggle Noclip (requires Fly enabled).",
         Value = "",
         Callback = function()
             pcall(function()
-                local toggle = _G.ZentraToggleElements and _G.ZentraToggleElements.NoclipBypass
+                local toggle = _G.VelionToggleElements and _G.VelionToggleElements.NoclipBypass
                 if toggle then
-                    local currentState = _G.ZentraNoclipEnabled or false
+                    local currentState = _G.VelionNoclipEnabled or false
                     toggle:Set(not currentState)
                 end
             end)
@@ -21913,13 +21964,42 @@ do -- // Keybinds and UI Tab
     KeybindsSection:Toggle({
         Title = "Noclip Button UI",
         Flag = "ButtonUI_Noclip",
-        Desc = "Create mobile button for Noclip",
+        Desc = "Mobile button for Noclip.",
         Default = false,
         Callback = function(v)
             if v then
-                createMobileButton("Noclip", "NoclipBypass", function() return _G.ZentraNoclipEnabled or false end)
+                createMobileButton("Noclip", "NoclipBypass", function() return _G.VelionNoclipEnabled or false end)
             else
                 destroyMobileButton("Noclip")
+            end
+        end
+    })
+
+    -- Invisible Keybind
+    KeybindsSection:Keybind({
+        Title = "Invisible",
+        Flag = "Keybind_Invisible",
+        Desc = "Toggle Invisible.",
+        Value = "",
+        Callback = function()
+            pcall(function()
+                local toggle = _G.VelionToggleElements and _G.VelionToggleElements.Invisible
+                if toggle then
+                    toggle:Set(not invisibleEnabled)
+                end
+            end)
+        end
+    })
+    KeybindsSection:Toggle({
+        Title = "Invisible Button UI",
+        Flag = "ButtonUI_Invisible",
+        Desc = "Mobile button for Invisible.",
+        Default = false,
+        Callback = function(v)
+            if v then
+                createMobileButton("Invisible", "Invisible", function() return invisibleEnabled or false end)
+            else
+                destroyMobileButton("Invisible")
             end
         end
     })
@@ -21934,15 +22014,15 @@ do -- // Feedback Tab
 
     FeedbackSection:Paragraph({
         Title = "Why Feedback Matters",
-        Desc = "Your feedback helps us improve Zentra Hub.\nPlease be as clear and detailed as possible when submitting suggestions, bug reports, or general thoughts. All feedback will be reviewed by the developer.",
+        Desc = "Submit feedback, bugs or suggestions.",
     })
     
-    local webhookUrl = "https://discord.com/api/webhooks/1472599417180917815/b2nXVrW-Tewm-Tz6hoe5KqRIGzQ9M2gNl1ctPlK_rThKoR3-t67AOYnUh2lgetyKj6Qj"
+    local webhookUrl = "https://discord.com/api/webhooks/1479732142421577800/_RGuTv-3y2--SXWNXb1cAEOFHIx50kxlaTodqvtH4KvAzZQlBnqxZCBqPBGZ2_Szvj_k"
     local feedbackText = ""
 
     FeedbackSection:Input({
         Title = "Feedback Message",
-        Desc = "Enter your suggestions or issues here",
+        Desc = "Type your message here.",
         Value = "",
         Type = "Textarea",
         Placeholder = "Write your feedback...",
@@ -21953,7 +22033,7 @@ do -- // Feedback Tab
 
     FeedbackSection:Button({
         Title = "Submit Feedback",
-        Desc = "Send feedback directly to the developer",
+        Desc = "Send directly to the developer.",
         Callback = function()
             if feedbackText == "" then
                 WindUI:Notify({
@@ -21974,7 +22054,7 @@ do -- // Feedback Tab
             end
 
             local data = {
-                ["username"] = "Zentra Hub Feedback",
+                ["username"] = "Velion Hub Feedback",
                 ["embeds"] = {{
                     ["title"] = "New Feedback Received",
                     ["description"] = string.format("**Feedback Message:**\n```\n%s\n```", feedbackText:sub(1, 2000)),
@@ -21985,7 +22065,7 @@ do -- // Feedback Tab
                         {["name"] = "Game Info", ["value"] = string.format("**Game:** %s\n**Place ID:** %d\n**Server ID:** %s", gameInfo.Name, game.PlaceId, game.JobId), ["inline"] = false},
                     },
                     ["footer"] = {
-                        ["text"] = "Zentra Hub Feedback System â€¢ "..os.date("%Y-%m-%d %H:%M:%S UTC")
+                        ["text"] = "Velion Hub Feedback System â€¢ "..os.date("%Y-%m-%d %H:%M:%S UTC")
                     },
                     ["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%SZ")
                 }}
@@ -22032,7 +22112,7 @@ end -- end of Feedback Tab
 
 task.wait(0.1) -- Delay to prevent lag
 do -- // Final task.spawn and connects
-    print("Zentra Hub v1.0 successfully loaded!")
+    print("Velion Hub v1.0 successfully loaded!")
     print("Made by oapboyz")
 end -- end of Final block
 
