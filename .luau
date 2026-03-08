@@ -9,6 +9,58 @@ do
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
+local StarterGui = game:GetService("StarterGui")
+
+-- ===== EXECUTOR COMPATIBILITY CHECK (UNC Check) =====
+local function getExecutorName()
+    return (identifyexecutor and identifyexecutor()) or (getexecutorname and getexecutorname()) or "Unknown"
+end
+
+local function isCompatible()
+    local requiredFunctions = {
+        "hookmetamethod",
+        "getnamecallmethod",
+        "checkcaller",
+        "newcclosure",
+        "hookfunction"
+    }
+    
+    local missingCount = 0
+    for _, func in ipairs(requiredFunctions) do
+        local found = false
+        pcall(function()
+            if getfenv()[func] or _G[func] or shared[func] then
+                found = true
+            end
+        end)
+        if not found then missingCount = missingCount + 1 end
+    end
+
+    -- If 2 or more critical functions are missing, the bypass won't work safely
+    return missingCount < 2
+end
+
+if not isCompatible() then
+    local execName = getExecutorName()
+    local msg = "Your " .. execName .. " Executor Not supposed"
+    
+    -- Attempt to notify the user via Roblox Notification
+    pcall(function()
+        StarterGui:SetCore("SendNotification", {
+            Title = "Incompatibility Detected",
+            Text = msg,
+            Duration = 10,
+            Button1 = "OK"
+        })
+    end)
+    
+    -- Also print to console
+    warn("[Guts & Blackpowder | Better🔥] " .. msg)
+    return -- STOP EXECUTION HERE
+end
+
+-- If compatible, continue script execution...
+
 
 -- ===== 1. ADVANCED STEALTH GUI PROTECTION (Enhanced v3) =====
 -- Multi-layer protection system with instance cloaking, hook-based hiding, and deep protection
@@ -75,15 +127,19 @@ local oldGetChildren, oldGetDescendants, oldFindFirstChild, oldFindFirstChildOfC
 
 local function setupInstanceCloaking()
     if CloakingEnabled then return end
-    if not hookfunction or not newcclosure then return end
+    
+    -- UNC Compatibility Check for Sunc and others
+    local hook = hookfunction or replaceclosure or detour_function
+    local closure = newcclosure or function(f) return f end -- Fallback if newcclosure missing
+    
+    if not hook then return end
     
     pcall(function()
         local folder = Instance.new("Folder")
         
         -- Hook GetChildren
-        oldGetChildren = hookfunction(folder.GetChildren, newcclosure(function(self)
+        oldGetChildren = hook(folder.GetChildren, closure(function(self)
             local children = oldGetChildren(self)
-            -- Fast path: if nothing is cloaked, return raw result immediately (no table copy)
             if not next(CloakedInstances) then return children end
             local filtered = {}
             for _, child in ipairs(children) do
@@ -95,9 +151,8 @@ local function setupInstanceCloaking()
         end))
         
         -- Hook GetDescendants
-        oldGetDescendants = hookfunction(folder.GetDescendants, newcclosure(function(self)
+        oldGetDescendants = hook(folder.GetDescendants, closure(function(self)
             local descendants = oldGetDescendants(self)
-            -- Fast path: if nothing is cloaked, return raw result immediately (no table copy)
             if not next(CloakedInstances) then return descendants end
             local filtered = {}
             for _, desc in ipairs(descendants) do
@@ -109,13 +164,8 @@ local function setupInstanceCloaking()
         end))
         
         -- Hook FindFirstChild
-        oldFindFirstChild = hookfunction(folder.FindFirstChild, newcclosure(function(self, name, recursive)
-            local result
-            if recursive then
-                result = oldFindFirstChild(self, name, true)
-            else
-                result = oldFindFirstChild(self, name)
-            end
+        oldFindFirstChild = hook(folder.FindFirstChild, closure(function(self, name, recursive)
+            local result = (recursive == true) and oldFindFirstChild(self, name, true) or oldFindFirstChild(self, name)
             if result and CloakedInstances[result] then
                 return nil
             end
@@ -123,7 +173,7 @@ local function setupInstanceCloaking()
         end))
         
         -- Hook FindFirstChildOfClass
-        oldFindFirstChildOfClass = hookfunction(folder.FindFirstChildOfClass, newcclosure(function(self, className)
+        oldFindFirstChildOfClass = hook(folder.FindFirstChildOfClass, closure(function(self, className)
             local result = oldFindFirstChildOfClass(self, className)
             if result and CloakedInstances[result] then
                 return nil
@@ -132,7 +182,7 @@ local function setupInstanceCloaking()
         end))
         
         -- Hook FindFirstChildWhichIsA
-        oldFindFirstChildWhichIsA = hookfunction(folder.FindFirstChildWhichIsA, newcclosure(function(self, className)
+        oldFindFirstChildWhichIsA = hook(folder.FindFirstChildWhichIsA, closure(function(self, className)
             local result = oldFindFirstChildWhichIsA(self, className)
             if result and CloakedInstances[result] then
                 return nil
@@ -362,13 +412,18 @@ local kickBlocked = 0
 local banBlocked = 0
 _G.AntiBreakLegsEnabled = _G.AntiBreakLegsEnabled or false
 
--- Block Player:Kick()
+-- Block Player:Kick() (UNC Compatible)
 local oldKick = nil
 pcall(function()
-    if hookfunction and newcclosure then
-        oldKick = hookfunction(Players.LocalPlayer.Kick, newcclosure(function(self, reason)
+    local hook = hookfunction or replaceclosure or detour_function
+    local closure = newcclosure or function(f) return f end
+    
+    if hook then
+        oldKick = hook(Players.LocalPlayer.Kick, closure(function(self, reason)
             kickBlocked = kickBlocked + 1
-            return nil -- Block the kick
+            -- Safety: If it's a legitimate game kick, we might want to let it through 
+            -- but for now, we block all as requested for anti-ban
+            return nil 
         end))
     end
 end)
@@ -715,35 +770,64 @@ _G.AntiBanStats = {
 -- ===== 11. LIGHTWEIGHT BYPASS (one-shot, no loops) =====
 -- Block Kick/BreakJoints on current char, disable known anti-cheat event connections once
 
+-- Improved Character Bypass (Async & Low UNC Compatible)
 local function applyCharBypass(char)
     if not char then return end
-    pcall(function()
-        if char.AddCallHook then
-            char:AddCallHook("BreakJoints", function() return end)
-        end
-    end)
-    pcall(function()
-        if LocalPlayer.AddCallHook then
-            LocalPlayer:AddCallHook("Kick", function() return task.wait(9e9) end)
-        end
-    end)
-    -- One-shot: disable logging service connections
-    pcall(function()
-        if getconnections then
-            for _, conn in next, getconnections(game:GetService("LogService").MessageOut) do
-                pcall(function() conn:Disable() end)
+    
+    -- Use task.spawn to prevent main thread blocking (No Lag)
+    task.spawn(function()
+        -- Method 1: AddCallHook (if supported by executor)
+        pcall(function()
+            if char.AddCallHook then
+                char:AddCallHook("BreakJoints", function() return end)
             end
-            for _, conn in next, getconnections(game:GetService("ScriptContext").Error) do
-                pcall(function() conn:Disable() end)
+            if LocalPlayer.AddCallHook then
+                LocalPlayer:AddCallHook("Kick", function() return task.wait(9e9) end)
             end
-        end
+        end)
+
+        -- Method 2: Namecall/Index Bypass (Already handled by global hooks, but we ensure char integrity)
+        pcall(function()
+            local hum = char:WaitForChild("Humanoid", 5)
+            if hum then
+                -- Protect against common AC death-based detections
+                hum.BreakJointsOnDeath = false
+            end
+        end)
+
+        -- Method 3: Connection Disabling (UNC Check)
+        -- We spread this out to avoid frame drops
+        task.wait(0.1)
+        pcall(function()
+            local getconn = getconnections or get_signal_cons
+            if getconn then
+                local logService = game:GetService("LogService")
+                local scriptContext = game:GetService("ScriptContext")
+                
+                for _, conn in next, getconn(logService.MessageOut) do
+                    if conn.Disable then conn:Disable() elseif conn.Disconnect then conn:Disconnect() end
+                end
+                
+                task.wait(0.05) -- Tiny yield to keep FPS high
+                
+                for _, conn in next, getconn(scriptContext.Error) do
+                    if conn.Disable then conn:Disable() elseif conn.Disconnect then conn:Disconnect() end
+                end
+            end
+        end)
     end)
 end
 
-applyCharBypass(LocalPlayer.Character)
+-- Initialize Bypass
+if LocalPlayer.Character then
+    applyCharBypass(LocalPlayer.Character)
+end
+
 LocalPlayer.CharacterAdded:Connect(function(newChar)
-    task.wait(0.5)
-    applyCharBypass(newChar)
+    -- Use task.defer for even smoother execution during character spawn
+    task.defer(function()
+        applyCharBypass(newChar)
+    end)
 end)
 
 end
