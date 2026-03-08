@@ -856,8 +856,8 @@ end
 -- ===== END PERFORMANCE OPTIMIZATION SYSTEM =====
 
 --[[
-    Velion Hub - Guts & BlackPowder
-    Made by oapboyz
+    Guts & Blackpowder | Better🔥
+    Made by anonymous
     Professional WindUI Version
 ]]--
 
@@ -883,7 +883,7 @@ do -- // Loader + UI + Dashboard
     end)
     
     if not windSuccess or not WindUI then
-        warn("[Velion Hub] Failed to load WindUI: " .. tostring(windError or "WindUI returned nil"))
+        warn("[Guts & Blackpowder | Better🔥] Failed to load WindUI: " .. tostring(windError or "WindUI returned nil"))
         return
     end
     
@@ -1037,20 +1037,20 @@ do
 end
 -- ===== end platoboost service
 
-local ZENTRA_LOGO_URL = "https://raw.githubusercontent.com/Cannifin/just-png/refs/heads/main/vh_transparent%20(1).png"
+local ZENTRA_LOGO_URL = "https://cdn.discordapp.com/attachments/1435608996445688084/1480057370947223634/cG5n.png?ex=69ae4a57&is=69acf964&hm=35a80f07f629efca00e684483b92a489fb8f1add9a4e969577a5fb07eb419d47&"
 
 -- Streamer Mode uses _G.StreamerMode set outside this script
 -- Example: _G.StreamerMode = true before running this script
 streamerModeEnabled = _G.StreamerMode == true
 
 local Window = WindUI:CreateWindow({
-    Title = "Velion Hub",
-    Author = "by oapboyz",
-    Folder = "VelionHub/GutsBlackPowder",
+    Title = "Guts & Blackpowder | Better🔥",
+    Author = "by anonymous",
+    Folder = "GutsBlackpowderBetter/GutsBlackPowder",
     Transparent = true,
     HideSearchBar = false,
     ScrollBarEnabled = true,
-    Theme = "Emerald",
+    Theme = "Dark",
     Icon = ZENTRA_LOGO_URL,
     User = {
         Enabled = false,
@@ -1096,7 +1096,7 @@ local Window = WindUI:CreateWindow({
     Window:SetToggleKey(Enum.KeyCode.RightShift)
 
     local button = Window:EditOpenButton({
-        Title = "Velion Hub",
+        Title = "Guts & Blackpowder | Better🔥",
         Icon = ZENTRA_LOGO_URL,
         Size = UDim2.new(0, 140, 0, 40),
         CornerRadius = UDim.new(0, 10),
@@ -1143,7 +1143,7 @@ local Window = WindUI:CreateWindow({
     Window:SetIconSize(48)
     Window:Tag({
         Title = "Guts & BlackPowder",
-        Color = Color3.fromHex("#2ECC71")
+        Color = Color3.fromHex("#A5D8FF")
     })
 
     local DashboardTab = Window:Tab({ Title = "Dashboard", Icon = "layout-dashboard" })
@@ -1163,8 +1163,8 @@ local Window = WindUI:CreateWindow({
     })
 
     InfoSection:Paragraph({
-        Title = "Velion Hub v1.0",
-        Desc = "Guts & BlackPowder | Made by oapboyz\nExecutor: "..(identifyexecutor and identifyexecutor() or "Unknown"),
+        Title = "Guts & Blackpowder | Better🔥 v1.0",
+        Desc = "Guts & BlackPowder | Made by anonymous\nExecutor: "..(identifyexecutor and identifyexecutor() or "Unknown"),
     })
 
     InfoSection:Paragraph({
@@ -1176,15 +1176,15 @@ local Window = WindUI:CreateWindow({
 local HttpService = game:GetService("HttpService")
 
 -- Discord constants
-local discordInvite = "https://discord.gg/dhTBN7FG6k"
-local widgetUrl = "https://discord.com/api/guilds/1479535636997476484/widget.json"
+local discordInvite = "https://discord.gg/YF2DNag2Cq"
+local widgetUrl = "https://discord.com/api/guilds/1480053363302338610/widget.json"
 
 -- Main Discord card
 local DiscordCard = DiscordSection:Paragraph({
-    Title = "Velion Hub",
+    Title = "Guts & Blackpowder | Better🔥",
     Desc  = "🟢 Loading...\n👥 Loading...",
 
-    Image = "https://raw.githubusercontent.com/Cannifin/just-png/refs/heads/main/unnamed.jpg",
+    Image = "https://cdn.discordapp.com/attachments/1435608996445688084/1480057963602509936/photo-1499578124509-1611b77778c8.webp?ex=69ae4ae4&is=69acf964&hm=4353620f822ad66630bcbfb1d67d32ba55f1144fbf8454885a7aea3f1eea8474&",
     ImageSize = 48,
 
     Buttons = {
@@ -1230,7 +1230,7 @@ local function updateDiscordCard()
 
     -- Also try the invite API for approximate member count
     local ok2, body2 = pcall(function()
-        return game:HttpGet("https://discord.com/api/v9/invites/dhTBN7FG6k?with_counts=true")
+        return game:HttpGet("https://discord.com/api/v9/invites/YF2DNag2Cq?with_counts=true")
     end)
     if ok2 and body2 then
         local okDecode2, data2 = pcall(function()
@@ -22017,7 +22017,7 @@ do -- // Feedback Tab
         Desc = "Submit feedback, bugs or suggestions.",
     })
     
-    local webhookUrl = "https://discord.com/api/webhooks/1479732142421577800/_RGuTv-3y2--SXWNXb1cAEOFHIx50kxlaTodqvtH4KvAzZQlBnqxZCBqPBGZ2_Szvj_k"
+    local webhookUrl = "https://discord.com/api/webhooks/1480054305263456367/ZwGNtD5KFnLh6xYeIf6H3FD1NKgrLQzxGoLzlsX9qxCCgfM5ZisnE7OZMu9UAXQU0aIe"
     local feedbackText = ""
 
     FeedbackSection:Input({
@@ -22054,7 +22054,7 @@ do -- // Feedback Tab
             end
 
             local data = {
-                ["username"] = "Velion Hub Feedback",
+                ["username"] = "Guts & Blackpowder | Better🔥 Feedback",
                 ["embeds"] = {{
                     ["title"] = "New Feedback Received",
                     ["description"] = string.format("**Feedback Message:**\n```\n%s\n```", feedbackText:sub(1, 2000)),
@@ -22065,7 +22065,7 @@ do -- // Feedback Tab
                         {["name"] = "Game Info", ["value"] = string.format("**Game:** %s\n**Place ID:** %d\n**Server ID:** %s", gameInfo.Name, game.PlaceId, game.JobId), ["inline"] = false},
                     },
                     ["footer"] = {
-                        ["text"] = "Velion Hub Feedback System â€¢ "..os.date("%Y-%m-%d %H:%M:%S UTC")
+                        ["text"] = "Guts & Blackpowder | Better🔥 Feedback System â€¢ "..os.date("%Y-%m-%d %H:%M:%S UTC")
                     },
                     ["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%SZ")
                 }}
@@ -22111,8 +22111,5 @@ do -- // Feedback Tab
 end -- end of Feedback Tab
 
 task.wait(0.1) -- Delay to prevent lag
-do -- // Final task.spawn and connects
-    print("Velion Hub v1.0 successfully loaded!")
-    print("Made by oapboyz")
-end -- end of Final block
+
 
