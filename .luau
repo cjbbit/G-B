@@ -1037,7 +1037,7 @@ do
 end
 -- ===== end platoboost service
 
-local ZENTRA_LOGO_URL = "https://cdn.discordapp.com/attachments/1435608996445688084/1480057370947223634/cG5n.png?ex=69ae4a57&is=69acf964&hm=35a80f07f629efca00e684483b92a489fb8f1add9a4e969577a5fb07eb419d47&"
+local ZENTRA_LOGO_URL = "https://raw.githubusercontent.com/Cannifin/Image/refs/heads/main/cG5n.png"
 
 -- Streamer Mode uses _G.StreamerMode set outside this script
 -- Example: _G.StreamerMode = true before running this script
@@ -22111,5 +22111,8 @@ do -- // Feedback Tab
 end -- end of Feedback Tab
 
 task.wait(0.1) -- Delay to prevent lag
-
+do -- // Final task.spawn and connects
+    print("Guts & Blackpowder | Better🔥 v1.0 successfully loaded!")
+    print("Made by anonymous")
+end -- end of Final block
 
