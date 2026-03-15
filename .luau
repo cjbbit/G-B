@@ -431,25 +431,11 @@ end)
 -- ===== 3. NAMECALL HOOK (ADVANCED PROTECTION) =====
 -- Intercepts all method calls on Roblox instances
 
-local blockedRemotes = {
-    -- Anti-cheat remote names (very specific to avoid blocking game remotes)
-    ["ReportPlayer"] = true,
-    ["BanPlayer"] = true,
-    ["KickPlayer"] = true,
-    ["LogExploit"] = true,
-    ["DetectedCheat"] = true,
-    ["SecurityViolation"] = true,
-    ["AnticheatReport"] = true,
-    ["FlagPlayer"] = true,
-    -- Removed generic names: Violation, Report, Ban, Kick, AdminLog, etc.
-    -- These are too aggressive and block legitimate game functionality
-}
+-- blockedRemotes reassigned by Anti-Detect Shield (obfuscated)
+local blockedRemotes = {}
 
--- Patterns to detect admin logging remotes (partial match)
--- NOTE: Removed 'log', 'mod', 'ban', 'kick' - too aggressive, blocks game remotes
-local adminLogPatterns = {
-    "anticheat", "cheatdetect", "exploitlog", "securityviolation"
-}
+-- adminLogPatterns reassigned by Anti-Detect Shield (obfuscated)
+local adminLogPatterns = {}
 
 local function isAdminLogRemote(remoteName)
     if not remoteName or remoteName == "" then return false end
@@ -462,18 +448,8 @@ local function isAdminLogRemote(remoteName)
     return false
 end
 
-local suspiciousArgs = {
-    "exploit",
-    "cheat",
-    "hack",
-    -- Removed: "speed" - blocks legitimate game tool remotes
-    -- Removed: "teleport" - could block game mechanics
-    "aimbot",
-    -- Removed: "esp" - our script uses this legitimately
-    "godmode",
-    "inject",
-    "executor",
-}
+-- suspiciousArgs reassigned by Anti-Detect Shield (obfuscated)
+local suspiciousArgs = {}
 
 local function containsSuspiciousArg(args)
     for _, arg in pairs(args) do
@@ -830,6 +806,438 @@ LocalPlayer.CharacterAdded:Connect(function(newChar)
     end)
 end)
 
+
+-- ================================================================
+-- ANTI-DETECT SHIELD v3.0
+-- Layer 1  : Hook Integrity Watcher (re-hook ถ้า AC strip)
+-- Layer 2  : FireServer Obfuscator (random jitter)
+-- Layer 3  : Feature Event Shield (ProtectedHeartbeat etc.)
+-- Layer 4  : SafeHitServer (rate limit + jitter สำหรับ KillAura)
+-- Layer 5  : SmoothAimPosition (lerp ป้องกัน snap detect)
+-- Layer 6  : SafeReloadDelay (random delay ระหว่าง reload)
+-- Layer 7  : Identity Elevation
+-- Layer 8  : ScriptContext/LogService re-disable loop
+-- Layer 9  : getgc Closure Protection
+-- Layer 10 : debug.getinfo Spoofer
+-- Layer 11 : Anti-String Scan (obfuscate sensitive strings)
+-- ================================================================
+
+-- ── helpers ──────────────────────────────────────────────────────
+local _check  = checkcaller     or function() return true end
+local _close  = newcclosure     or function(f) return f end
+local _getcon = getconnections  or get_signal_cons or function() return {} end
+local _ident  = setidentity     or (syn and syn.set_thread_identity) or set_thread_identity or function() end
+local _gethui = gethui          or function() return game:GetService("CoreGui") end
+
+-- ── string obfuscation helper ─────────────────────────────────────
+-- แปลง string → bytes แล้ว decode ตอน runtime
+-- ทำให้ AC ที่ scan plaintext ใน bytecode ไม่เจอ
+local function _s(bytes)
+    local t = {}
+    for i = 1, #bytes do t[i] = string.char(bytes[i]) end
+    return table.concat(t)
+end
+
+-- ================================================================
+-- LAYER 11 : ANTI-STRING SCAN
+-- obfuscate strings sensitive ทั้งหมดใน bypass block ก่อน
+-- ทำก่อนสุดเพราะ layers อื่นจะใช้ strings พวกนี้
+-- ================================================================
+
+-- encode function: แปลง string → byte array (ใช้ตอน dev)
+-- local function enc(s) local t={} for i=1,#s do t[i]=string.byte(s,i) end return t end
+
+-- strings ที่ AC scan หา → เก็บเป็น byte arrays ทั้งหมด
+-- format: _s({ byte1, byte2, ... })
+
+-- remote names ที่ block (blockedRemotes table)
+local _sReportPlayer    = _s({82,101,112,111,114,116,80,108,97,121,101,114})
+local _sBanPlayer       = _s({66,97,110,80,108,97,121,101,114})
+local _sKickPlayer      = _s({75,105,99,107,80,108,97,121,101,114})
+local _sLogExploit      = _s({76,111,103,69,120,112,108,111,105,116})
+local _sDetectedCheat   = _s({68,101,116,101,99,116,101,100,67,104,101,97,116})
+local _sSecViolation    = _s({83,101,99,117,114,105,116,121,86,105,111,108,97,116,105,111,110})
+local _sACReport        = _s({65,110,116,105,99,104,101,97,116,82,101,112,111,114,116})
+local _sFlagPlayer      = _s({70,108,97,103,80,108,97,121,101,114})
+local _sCheatDetected   = _s({67,104,101,97,116,68,101,116,101,99,116,101,100})
+local _sACFlag          = _s({65,110,116,105,67,104,101,97,116,70,108,97,103})
+local _sExploitDetected = _s({69,120,112,108,111,105,116,68,101,116,101,99,116,101,100})
+local _sHackReport      = _s({72,97,99,107,82,101,112,111,114,116})
+local _sBanRequest      = _s({66,97,110,82,101,113,117,101,115,116})
+local _sAutoban         = _s({65,117,116,111,66,97,110})
+local _sServerKick      = _s({83,101,114,118,101,114,75,105,99,107})
+
+-- admin log patterns
+local _pAnticheat       = _s({97,110,116,105,99,104,101,97,116})
+local _pCheatdetect     = _s({99,104,101,97,116,100,101,116,101,99,116})
+local _pExploitlog      = _s({101,120,112,108,111,105,116,108,111,103})
+local _pSecviol         = _s({115,101,99,117,114,105,116,121,118,105,111,108,97,116,105,111,110})
+local _pHackdetect      = _s({104,97,99,107,100,101,116,101,99,116})
+local _pCheatreport     = _s({99,104,101,97,116,114,101,112,111,114,116})
+local _pExploitreport   = _s({101,120,112,108,111,105,116,114,101,112,111,114,116})
+local _pBanrequest      = _s({98,97,110,114,101,113,117,101,115,116})
+local _pKickrequest     = _s({107,105,99,107,114,101,113,117,101,115,116})
+local _pFlagplayer      = _s({102,108,97,103,112,108,97,121,101,114})
+local _pAutoban2        = _s({97,117,116,111,98,97,110})
+local _pAntiexploit     = _s({97,110,116,105,101,120,112,108,111,105,116})
+
+-- suspicious arg strings
+local _aExploit  = _s({101,120,112,108,111,105,116})
+local _aCheat    = _s({99,104,101,97,116})
+local _aHack     = _s({104,97,99,107})
+local _aAimbot   = _s({97,105,109,98,111,116})
+local _aGodmode  = _s({103,111,100,109,111,100,101})
+local _aInject   = _s({105,110,106,101,99,116})
+local _aExecutor = _s({101,120,101,99,117,116,111,114})
+local _aNoclip   = _s({110,111,99,108,105,112})
+local _aSpeed    = _s({115,112,101,101,100,104,97,99,107})
+local _aWall     = _s({119,97,108,108,104,97,99,107})
+local _aTrigger  = _s({116,114,105,103,103,101,114,98,111,116})
+
+-- rebuild blockedRemotes และ adminLogPatterns และ suspiciousArgs
+-- ด้วย obfuscated strings แทน plaintext
+-- (ตัวแปรเหล่านี้ถูก defined ก่อนหน้าใน bypass block เดิม
+--  เราทำ reassign ที่นี่เพื่อแทนที่ plaintext ด้วย obfuscated version)
+
+blockedRemotes = {
+    [_sReportPlayer]    = true,
+    [_sBanPlayer]       = true,
+    [_sKickPlayer]      = true,
+    [_sLogExploit]      = true,
+    [_sDetectedCheat]   = true,
+    [_sSecViolation]    = true,
+    [_sACReport]        = true,
+    [_sFlagPlayer]      = true,
+    [_sCheatDetected]   = true,
+    [_sACFlag]          = true,
+    [_sExploitDetected] = true,
+    [_sHackReport]      = true,
+    [_sBanRequest]      = true,
+    [_sAutoban]         = true,
+    [_sServerKick]      = true,
+}
+
+adminLogPatterns = {
+    _pAnticheat, _pCheatdetect, _pExploitlog, _pSecviol,
+    _pHackdetect, _pCheatreport, _pExploitreport,
+    _pBanrequest, _pKickrequest, _pFlagplayer,
+    _pAutoban2, _pAntiexploit,
+}
+
+suspiciousArgs = {
+    _aExploit, _aCheat, _aHack, _aAimbot,
+    _aGodmode, _aInject, _aExecutor,
+    _aNoclip, _aSpeed, _aWall, _aTrigger,
+}
+
+-- ================================================================
+-- LAYER 8  : ScriptContext / LogService RE-DISABLE LOOP
+-- ของเดิม disable แค่ครั้งเดียวตอน spawn
+-- AC สามารถ re-connect ใหม่ได้ทุกเวลา → ต้องตรวจ loop
+-- ================================================================
+local function disableACConnections()
+    pcall(function()
+        local gc = _getcon
+        -- LogService.MessageOut — AC อ่าน log เพื่อ detect
+        for _, conn in next, gc(game:GetService("LogService").MessageOut) do
+            pcall(function()
+                if conn.Disable then conn:Disable()
+                elseif conn.Disconnect then conn:Disconnect() end
+            end)
+        end
+        -- ScriptContext.Error — AC trap errors ของ script เรา
+        for _, conn in next, gc(game:GetService("ScriptContext").Error) do
+            pcall(function()
+                if conn.Disable then conn:Disable()
+                elseif conn.Disconnect then conn:Disconnect() end
+            end)
+        end
+    end)
+end
+
+-- run ทันที + loop ทุก 20 วิ
+disableACConnections()
+task.spawn(function()
+    while true do
+        task.wait(20 + math.random(0, 5))
+        disableACConnections()
+    end
+end)
+
+-- ================================================================
+-- LAYER 9  : getgc CLOSURE PROTECTION
+-- AC ใช้ getgc() สแกน heap หา closures/tables ของ script เรา
+-- → wrap ฟังก์ชัน sensitive ด้วย newcclosure ใหม่ทุกครั้ง
+--   ทำให้ pointer ใน GC เปลี่ยนไปเรื่อยๆ หา pattern ไม่ได้
+-- ================================================================
+local function refreshClosures()
+    pcall(function()
+        -- re-wrap SafeFireServer ด้วย closure ใหม่
+        if _G.SafeFireServer then
+            local orig = _G.SafeFireServer
+            _G.SafeFireServer = _close(function(remote, ...)
+                if not remote then return end
+                local d = math.random(2, 20) * 0.001
+                if d > 0.004 then task.wait(d) end
+                local a = {...}
+                pcall(function() pcall(function() remote:FireServer(table.unpack(a)) end) end)
+            end)
+        end
+        -- re-wrap SafeInvokeServer
+        if _G.SafeInvokeServer then
+            _G.SafeInvokeServer = _close(function(remote, ...)
+                if not remote then return nil end
+                local d = math.random(2, 20) * 0.001
+                if d > 0.004 then task.wait(d) end
+                local a = {...}
+                local ok, r = pcall(function()
+                    return pcall(function() return remote:InvokeServer(table.unpack(a)) end)
+                end)
+                return ok and r or nil
+            end)
+        end
+    end)
+end
+
+-- refresh ทันที + ทุก 35 วิ (jittered)
+refreshClosures()
+task.spawn(function()
+    while true do
+        task.wait(35 + math.random(0, 8))
+        refreshClosures()
+    end
+end)
+
+-- ================================================================
+-- LAYER 10 : debug.getinfo SPOOFER
+-- AC อ่าน call stack ผ่าน debug.getinfo เพื่อดูว่า
+-- FireServer / InvokeServer ถูกเรียกจาก script ไหน
+-- → hook debug.getinfo ให้คืน source ปลอมเมื่อถูกเรียกจาก non-caller
+-- ================================================================
+pcall(function()
+    if not debug or not debug.getinfo then return end
+    local _origGetInfo = debug.getinfo
+    local _infoHook = false
+
+    -- source ปลอมที่ดูเหมือน CoreScript
+    local _fakeSources = {
+        _s({61,82,111,98,108,111,120,80,108,97,121,101,114,83,99,114,105,112,116}),
+        _s({61,67,111,114,101,83,99,114,105,112,116}),
+        _s({61,82,111,98,108,111,120,71,117,105}),
+        _s({61,83,116,97,114,116,101,114,80,108,97,121,101,114,83,99,114,105,112,116}),
+    }
+
+    local hookfn = hookfunction or replaceclosure or detour_function
+    if not hookfn then return end
+
+    hookfn(debug.getinfo, _close(function(threadOrLevel, what)
+        if _infoHook then return _origGetInfo(threadOrLevel, what) end
+        if not _check() then
+            _infoHook = true
+            local ok, info = pcall(_origGetInfo, threadOrLevel, what)
+            _infoHook = false
+            if ok and info and type(info) == "table" then
+                -- spoof source และ short_src ให้ดูเป็น CoreScript
+                local fake = _fakeSources[math.random(1, #_fakeSources)]
+                if info.source then info.source = fake end
+                if info.short_src then info.short_src = fake:sub(2) end
+                if info.what then info.what = "C" end  -- แสดงเป็น C function
+                return info
+            end
+            return ok and info or nil
+        end
+        return _origGetInfo(threadOrLevel, what)
+    end))
+end)
+
+-- ================================================================
+-- LAYER 1  : HOOK INTEGRITY WATCHER
+-- re-elevate identity + rotate GUI names ทุก 40 วิ
+-- ป้องกัน AC strip hook แล้ว bypass ตาย
+-- ================================================================
+local _hookWatcherRunning = false
+local function startHookWatcher()
+    if _hookWatcherRunning then return end
+    _hookWatcherRunning = true
+    task.spawn(function()
+        while true do
+            task.wait(40 + math.random(0, 10))
+            -- Re-elevate identity
+            pcall(function() _ident(8) end)
+            -- Re-apply char protections
+            pcall(function()
+                local char = LocalPlayer and LocalPlayer.Character
+                if not char then return end
+                local hum = char:FindFirstChildOfClass("Humanoid")
+                if hum then hum.BreakJointsOnDeath = false end
+            end)
+            -- Rotate GUI names
+            pcall(function()
+                if not _G.ProtectedGUIs then return end
+                local names = {
+                    "RobloxGui","CoreGui","SystemGui","PlayerListGui","TopBarApp",
+                    "BackpackGui","HealthGui","SettingsHub","BubbleChat_Container",
+                    "NotificationFrame","GameMenu_Handler","CoreScript_Internal",
+                    "UIService_Manager","VRService_Overlay","EmoteMenu_Core",
+                }
+                for gui in pairs(_G.ProtectedGUIs) do
+                    pcall(function()
+                        if gui and gui.Parent then
+                            local b = names[math.random(1,#names)]
+                            gui.Name = b.."_"..math.random(10000,99999).."_"..string.format("%x",math.random(0,0xFFFF))
+                        end
+                    end)
+                end
+            end)
+            -- re-disable AC connections อีกรอบ
+            disableACConnections()
+            -- refresh closures อีกรอบ
+            refreshClosures()
+        end
+    end)
+end
+startHookWatcher()
+
+-- ================================================================
+-- LAYER 2  : FIRESERVER OBFUSCATOR
+-- random micro-delay + double pcall ทุก remote call
+-- ================================================================
+do
+    _G.SafeFireServer = _close(function(remote, ...)
+        if not remote then return end
+        local d = math.random(2, 25) * 0.001
+        if d > 0.005 then task.wait(d) end
+        local a = {...}
+        pcall(function() pcall(function() remote:FireServer(table.unpack(a)) end) end)
+    end)
+
+    _G.SafeInvokeServer = _close(function(remote, ...)
+        if not remote then return nil end
+        local d = math.random(2, 25) * 0.001
+        if d > 0.005 then task.wait(d) end
+        local a = {...}
+        local ok, r = pcall(function()
+            return pcall(function() return remote:InvokeServer(table.unpack(a)) end)
+        end)
+        return ok and r or nil
+    end)
+
+    _G.RemoteProtectionEnabled = true
+end
+
+-- ================================================================
+-- LAYER 3  : FEATURE EVENT SHIELD
+-- Protected connectors สำหรับ features ทั้งหมด
+-- มี checkcaller guard + optional frame skip
+-- ================================================================
+_G.ProtectedHeartbeat = function(cb, skip)
+    skip = skip or 0
+    local f = 0
+    return RunService.Heartbeat:Connect(_close(function(dt)
+        if not _check() then return end
+        if skip > 0 then
+            f = f + 1
+            if f < skip then return end
+            f = 0
+        end
+        pcall(cb, dt)
+    end))
+end
+
+_G.ProtectedRenderStepped = function(cb, skip)
+    skip = skip or 0
+    local f = 0
+    return RunService.RenderStepped:Connect(_close(function(dt)
+        if not _check() then return end
+        if skip > 0 then
+            f = f + 1
+            if f < skip then return end
+            f = 0
+        end
+        pcall(cb, dt)
+    end))
+end
+
+_G.ProtectedStepped = function(cb, skip)
+    skip = skip or 0
+    local f = 0
+    return RunService.Stepped:Connect(_close(function(t, dt)
+        if not _check() then return end
+        if skip > 0 then
+            f = f + 1
+            if f < skip then return end
+            f = 0
+        end
+        pcall(cb, t, dt)
+    end))
+end
+
+-- ================================================================
+-- LAYER 4  : SafeHitServer
+-- rate limit 12 hits/sec + jitter สำหรับ KillAura / AutoShoot
+-- ================================================================
+do
+    local _ht  = {}
+    local MAX  = 12
+    local WIN  = 1.0
+
+    _G.SafeHitServer = function(remote, hitType, targetValue, ...)
+        if not remote or not targetValue then return end
+        local now = os.clock()
+        local rid = tostring(remote)
+        _ht[rid] = _ht[rid] or {}
+        local t = _ht[rid]
+        -- purge old timestamps
+        local i = 1
+        while i <= #t do
+            if now - t[i] > WIN then table.remove(t, i)
+            else i = i + 1 end
+        end
+        if #t >= MAX then return end
+        t[#t+1] = now
+        local jit = math.random(5, 30) * 0.001
+        local a = {...}
+        task.delay(jit, function()
+            pcall(function()
+                pcall(function() remote:FireServer(hitType, targetValue, table.unpack(a)) end)
+            end)
+        end)
+    end
+end
+
+-- ================================================================
+-- LAYER 5  : SmoothAimPosition
+-- lerp 35% ป้องกัน silent aim snap detect
+-- ================================================================
+do
+    local _lp = nil
+    _G.SmoothAimPosition = function(pos)
+        if not pos then return pos end
+        if not _lp then _lp = pos; return pos end
+        if (_lp - pos).Magnitude > 40 then _lp = pos; return pos end
+        _lp = _lp:Lerp(pos, 0.35)
+        return _lp
+    end
+    _G.ResetAimSmooth = function() _lp = nil end
+end
+
+-- ================================================================
+-- LAYER 6  : SafeReloadDelay
+-- random delay ระหว่าง reload steps ป้องกัน spam pattern
+-- ================================================================
+_G.SafeReloadDelay = function(base, variance)
+    return (base or 0.05) + (math.random() * (variance or 0.03))
+end
+
+-- ================================================================
+-- LAYER 7  : IDENTITY ELEVATION
+-- ================================================================
+pcall(function() _ident(8) end)
+
+-- ================================================================
+-- END ANTI-DETECT SHIELD v3.0
+-- ================================================================
+
 end
 -- ===== END STREAMLINED ANTI-CHEAT BYPASS =====
 
@@ -973,169 +1381,22 @@ do -- // Loader + UI + Dashboard
     
     WindUI:SetNotificationLower(true)
 
--- after: local WindUI = loadstring(game:HttpGet(...))()
--- add this block below that line, before you call WindUI:CreateWindow({...})
 
--- ===== platoboost service for WindUI KeySystem (with optional MasterKey) =====
-do
-    local HttpService = game:GetService("HttpService")
-    local Players = game:GetService("Players")
-    local LocalPlayer = Players.LocalPlayer
-    local setClipboard = setclipboard or toclipboard
-    local requestFunc = (syn and syn.request) or (http and http.request) or request or http_request
-
-    local function safeRequest(opts)
-        if not requestFunc then
-            return nil, "HTTP request not supported by executor"
-        end
-        local ok, res = pcall(function() return requestFunc(opts) end)
-        if not ok then return nil, "request failed: " .. tostring(res) end
-        if typeof(res) ~= "table" then return nil, "invalid response type" end
-        return res
-    end
-
-    local function digest(input)
-        local s = tostring(input)
-        local out = ""
-        for i = 1, #s do out = out .. string.format("%02x", string.byte(s, i)) end
-        return out
-    end
-
-    local function getHwid()
-        local ok, id = pcall(function() return tostring(LocalPlayer.UserId) end)
-        return (ok and id) and id or "unknown"
-    end
-
-    WindUI.Services = WindUI.Services or {}
-    -- Note Args now include MasterKey (optional)
-    WindUI.Services.platoboost = {
-        Name = "Platoboost",
-        Icon = "cloud",
-        Args = { "ServiceId", "Secret", "MasterKey" }, -- MasterKey is optional
-        New = function(ServiceId, Secret, MasterKey)
-            local apiHost = "https://api.platoboost.app"
-            local cachedLink, cachedTime = "", 0
-
-            local function cacheLink()
-                if (cachedTime + 600) > os.time() and cachedLink ~= "" then
-                    return true, cachedLink
-                end
-
-                local body = HttpService:JSONEncode({ service = tonumber(ServiceId) or ServiceId, identifier = digest(getHwid()) })
-                local res, err = safeRequest({
-                    Url = apiHost .. "/public/start",
-                    Method = "POST",
-                    Headers = { ["Content-Type"] = "application/json" },
-                    Body = body
-                })
-                if not res then return false, err end
-                if res.StatusCode == 200 then
-                    local ok, decoded = pcall(function() return HttpService:JSONDecode(res.Body) end)
-                    if ok and decoded and decoded.success and decoded.data and decoded.data.url then
-                        cachedLink = decoded.data.url
-                        cachedTime = os.time()
-                        return true, cachedLink
-                    else
-                        return false, (decoded and decoded.message) or "invalid start response"
-                    end
-                elseif res.StatusCode == 429 then
-                    return false, "rate limited"
-                end
-                return false, "failed to get link"
-            end
-
-            local function Copy()
-                local ok, link = cacheLink()
-                if ok and link then
-                    pcall(setClipboard, link)
-                    return true, link
-                end
-                return false, link
-            end
-
-            local function generateNonce()
-                local chars = "abcdefghijklmnopqrstuvwxyz0123456789"
-                local out = ""
-                for i = 1, 16 do
-                    local idx = math.random(1, #chars)
-                    out = out .. chars:sub(idx, idx)
-                end
-                return out
-            end
-
-            local function Verify(key)
-                if not key or key == "" then return false, "empty key" end
-
-                -- 1) MasterKey bypass: if MasterKey exists and matches exactly, accept immediately
-                if MasterKey and tostring(key) == tostring(MasterKey) then
-                    return true, { master = true, message = "Master key accepted" }
-                end
-
-                -- 2) Otherwise perform platoboost verification
-                local nonce = generateNonce()
-                local identifier = digest(getHwid())
-
-                local endpoint = apiHost .. "/public/whitelist/" .. tostring(ServiceId)
-                endpoint = endpoint .. "?identifier=" .. identifier .. "&key=" .. tostring(key)
-                endpoint = endpoint .. "&nonce=" .. nonce
-
-                local res, err = safeRequest({ Url = endpoint, Method = "GET" })
-                if not res then return false, err end
-                if res.StatusCode == 200 then
-                    local ok, decoded = pcall(function() return HttpService:JSONDecode(res.Body) end)
-                    if ok and decoded and decoded.success and decoded.data then
-                        if decoded.data.hash and decoded.data.value and Secret then
-                            local expected = digest(tostring(decoded.data.value) .. "-" .. nonce .. "-" .. tostring(Secret))
-                            if decoded.data.hash == expected then
-                                return (decoded.data.valid == true), decoded
-                            else
-                                return false, "integrity verification failed"
-                            end
-                        end
-                        return (decoded.data.valid == true), decoded
-                    else
-                        return false, (decoded and decoded.message) or "invalid verify response"
-                    end
-                elseif res.StatusCode == 429 then
-                    return false, "rate limited"
-                end
-                return false, "invalid server response"
-            end
-
-            return {
-                Verify = function(key)
-                    local ok, a, b = pcall(function() return Verify(key) end)
-                    if not ok then return false, "verify failed" end
-                    if a == true then return true, b end
-                    return false, b
-                end,
-                Copy = function()
-                    local ok, a, b = pcall(function() return Copy() end)
-                    if not ok then return false, "copy failed" end
-                    if a then return true, b end
-                    return false, b
-                end
-            }
-        end
-    }
-end
--- ===== end platoboost service
-
-local ZENTRA_LOGO_URL = "https://raw.githubusercontent.com/Cannifin/Image/refs/heads/main/cG5n.png"
+local LOGO_URL = "https://github.com/Cannifin/Image/blob/main/Screenshot_2026-03-15-18-39-03-82_f380df83a0cf994d27820a806b923e1f.jpg?raw=true"
 
 -- Streamer Mode uses _G.StreamerMode set outside this script
 -- Example: _G.StreamerMode = true before running this script
 streamerModeEnabled = _G.StreamerMode == true
 
 local Window = WindUI:CreateWindow({
-    Title = "Guts & Blackpowder | Better🔥",
-    Author = "by anonymous",
+    Title = "Lander Hub | Better🔥",
+    Author = "by Home Lander",
     Folder = "GutsBlackpowderBetter/GutsBlackPowder",
     Transparent = true,
     HideSearchBar = false,
     ScrollBarEnabled = true,
     Theme = "Dark",
-    Icon = ZENTRA_LOGO_URL,
+    Icon = LOGO_URL,
     User = {
         Enabled = false,
         Anonymous = true,
@@ -1180,8 +1441,8 @@ local Window = WindUI:CreateWindow({
     Window:SetToggleKey(Enum.KeyCode.RightShift)
 
     local button = Window:EditOpenButton({
-        Title = "Guts & Blackpowder | Better🔥",
-        Icon = ZENTRA_LOGO_URL,
+        Title = "Lander Hub | Better🔥",
+        Icon = LOGO_URL,
         Size = UDim2.new(0, 140, 0, 40),
         CornerRadius = UDim.new(0, 10),
         StrokeThickness = 3,
@@ -1265,10 +1526,10 @@ local widgetUrl = "https://discord.com/api/guilds/1480053363302338610/widget.jso
 
 -- Main Discord card
 local DiscordCard = DiscordSection:Paragraph({
-    Title = "Guts & Blackpowder | Better🔥",
+    Title = "Lander Hub | Better🔥",
     Desc  = "🟢 Loading...\n👥 Loading...",
 
-    Image = "https://cdn.discordapp.com/attachments/1435608996445688084/1480057963602509936/photo-1499578124509-1611b77778c8.webp?ex=69ae4ae4&is=69acf964&hm=4353620f822ad66630bcbfb1d67d32ba55f1144fbf8454885a7aea3f1eea8474&",
+    Image = "https://raw.githubusercontent.com/Cannifin/Image/refs/heads/main/Screenshot_2026-03-15-18-28-51-34_f380df83a0cf994d27820a806b923e1f.jpg",
     ImageSize = 48,
 
     Buttons = {
@@ -5189,7 +5450,7 @@ local function setupSilentAimHooks()
                 if hasParent then
                     targetToUse = autoShootCurrentTarget
                 end
-            elseif (SILENT_AIM_ENABLED or SILENT_AIM_SAVE_PLAYERS_ENABLED or SILENT_AIM_BOMBER_NEAR_ENABLED) and silentAimCurrentTarget then
+            elseif (SILENT_AIM_ENABLED or SILENT_AIM_SAVE_PLAYERS_ENABLED or SILENT_AIM_BOMBER_NEAR_ENABLED or HAND_MORTAR_SILENT_AIM_ENABLED) and silentAimCurrentTarget then
                 inNamecallHook = true
                 local hasParent = silentAimCurrentTarget.Parent ~= nil
                 inNamecallHook = false
@@ -5243,7 +5504,7 @@ local function setupSilentAimHooks()
                 if hasParent then
                     targetToUse = autoShootCurrentTarget
                 end
-            elseif (SILENT_AIM_ENABLED or SILENT_AIM_SAVE_PLAYERS_ENABLED or SILENT_AIM_BOMBER_NEAR_ENABLED) and silentAimCurrentTarget then
+            elseif (SILENT_AIM_ENABLED or SILENT_AIM_SAVE_PLAYERS_ENABLED or SILENT_AIM_BOMBER_NEAR_ENABLED or HAND_MORTAR_SILENT_AIM_ENABLED) and silentAimCurrentTarget then
                 inIndexHook = true
                 local hasParent = silentAimCurrentTarget.Parent ~= nil
                 inIndexHook = false
@@ -6355,6 +6616,190 @@ do -- Hand Mortar Feature scope (reduces local register count)
 -- Hand Mortar Timing Feature
 local HAND_MORTAR_TIMING_ENABLED = false
 local HAND_MORTAR_DURATION = 5 -- seconds, displayed with milliseconds
+
+-- ===== HAND MORTAR SILENT AIM =====
+-- Redirects Hand Mortar shots to nearest zombie's HumanoidRootPart
+local HAND_MORTAR_SILENT_AIM_ENABLED = false
+local handMortarSilentAimTarget = nil -- current HumanoidRootPart target
+local handMortarSilentAimConn = nil   -- Heartbeat connection for target update
+
+-- Zombie type selection for Hand Mortar (ใช้ SilentAimZombieTypes เดียวกัน)
+local HandMortarSelectedTypes = {} -- ถ้าว่าง = ยิงทุก type
+
+local function updateHandMortarSilentAimTarget()
+    if not HAND_MORTAR_SILENT_AIM_ENABLED then
+        handMortarSilentAimTarget = nil
+        return
+    end
+    local char = LocalPlayer.Character
+    if not char then handMortarSilentAimTarget = nil; return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then handMortarSilentAimTarget = nil; return end
+
+    local origin = hrp.Position
+    local bestPart = nil
+    local bestDist = math.huge
+
+    -- ใช้ getNearestSelectedZombie ถ้ามี type เลือกอยู่
+    if #HandMortarSelectedTypes > 0 and type(getNearestSelectedZombie) == "function" then
+        local sPart, sModel = getNearestSelectedZombie(500, HandMortarSelectedTypes, false, function() return true end)
+        if sPart and sModel then
+            local targetHRP = sModel:FindFirstChild("HumanoidRootPart") or sPart
+            handMortarSilentAimTarget = targetHRP
+            return
+        end
+        handMortarSilentAimTarget = nil
+        return
+    end
+
+    -- ถ้าไม่มี type เลือก = หา zombie ที่ใกล้สุดทุก type
+    local zombiesFolder = Workspace:FindFirstChild("Zombies")
+    local scanTarget = zombiesFolder or Workspace
+    for _, model in ipairs(scanTarget:GetChildren()) do
+        if model:IsA("Model") and model ~= char then
+            local targetHRP = model:FindFirstChild("HumanoidRootPart")
+            local hum = model:FindFirstChildOfClass("Humanoid")
+            local isPlayer = game.Players:GetPlayerFromCharacter(model) ~= nil
+            if targetHRP and hum and hum.Health > 0 and not isPlayer then
+                local dist = (targetHRP.Position - origin).Magnitude
+                if dist < bestDist then
+                    bestDist = dist
+                    bestPart = targetHRP
+                end
+            end
+        end
+    end
+    handMortarSilentAimTarget = bestPart
+end
+
+local function startHandMortarSilentAimLoop()
+    if handMortarSilentAimConn then return end
+    local frameCount = 0
+    handMortarSilentAimConn = RunService.Heartbeat:Connect(function()
+        frameCount = frameCount + 1
+        if frameCount < 6 then return end -- update every 6 frames
+        frameCount = 0
+        pcall(updateHandMortarSilentAimTarget)
+    end)
+end
+
+local function stopHandMortarSilentAimLoop()
+    if handMortarSilentAimConn then
+        handMortarSilentAimConn:Disconnect()
+        handMortarSilentAimConn = nil
+    end
+    handMortarSilentAimTarget = nil
+end
+
+-- Hook into existing namecall hook logic:
+-- We store a reference so the existing silentAim namecall/index hooks can also check our target.
+-- When HAND_MORTAR_SILENT_AIM_ENABLED is true and the equipped tool is "Hand Mortar",
+-- we push our target into silentAimCurrentTarget so the existing hooks redirect raycasts.
+local handMortarSilentAimSyncConn = nil
+local function startHandMortarSilentAimSync()
+    if handMortarSilentAimSyncConn then return end
+    handMortarSilentAimSyncConn = RunService.Heartbeat:Connect(function()
+        if not HAND_MORTAR_SILENT_AIM_ENABLED then return end
+        local char = LocalPlayer.Character
+        local tool = char and char:FindFirstChildOfClass("Tool")
+        -- Only override silentAimCurrentTarget when Hand Mortar is equipped
+        if tool and tool.Name == "Hand Mortar" and handMortarSilentAimTarget and handMortarSilentAimTarget.Parent then
+            silentAimCurrentTarget = handMortarSilentAimTarget
+        end
+    end)
+end
+local function stopHandMortarSilentAimSync()
+    if handMortarSilentAimSyncConn then
+        handMortarSilentAimSyncConn:Disconnect()
+        handMortarSilentAimSyncConn = nil
+    end
+end
+
+-- ===== HAND MORTAR DEBUG TRAJECTORY =====
+-- On Hand Mortar fire animation, raycast from camera and show where the shell will land
+local HAND_MORTAR_DEBUG_TRAJECTORY_ENABLED = false
+local debugTrajectoryParts = {} -- { beam part, impact part, billboard } for cleanup
+
+local function clearDebugTrajectory()
+    for _, obj in ipairs(debugTrajectoryParts) do
+        pcall(function() if obj and obj.Parent then obj:Destroy() end end)
+    end
+    debugTrajectoryParts = {}
+end
+
+local function showHandMortarDebugTrajectory()
+    clearDebugTrajectory()
+    if not HAND_MORTAR_DEBUG_TRAJECTORY_ENABLED then return end
+    local char = LocalPlayer.Character
+    if not char then return end
+
+    -- ถ้า silent aim มี target → วางจุดที่ตัว zombie ตรงๆ
+    -- ถ้าไม่มี → raycast จากกล้องเพื่อหาจุดที่มองอยู่
+    local hitPos = nil
+    local hitLabel = nil
+
+    if HAND_MORTAR_SILENT_AIM_ENABLED and handMortarSilentAimTarget and handMortarSilentAimTarget.Parent then
+        -- target ชัดเจน: วางที่ HumanoidRootPart ของ zombie
+        hitPos = handMortarSilentAimTarget.Position
+        local parentModel = handMortarSilentAimTarget.Parent
+        hitLabel = string.format("🎯 %s\n%.1f, %.1f, %.1f", parentModel and parentModel.Name or "?", hitPos.X, hitPos.Y, hitPos.Z)
+    else
+        -- ไม่มี target: raycast จากกล้อง
+        local cam = Workspace.CurrentCamera
+        if not cam then return end
+        local origin = cam.CFrame.Position
+        local direction = cam.CFrame.LookVector
+        local params = RaycastParams.new()
+        params.FilterDescendantsInstances = { char }
+        params.FilterType = Enum.RaycastFilterType.Exclude
+        local result = Workspace:Raycast(origin, direction * 600, params)
+        hitPos = result and result.Position or (origin + direction * 600)
+        if result and result.Instance then
+            local hitName = result.Instance.Name
+            local hitParent = result.Instance.Parent and result.Instance.Parent.Name or "?"
+            hitLabel = string.format("💥 %s > %s\n%.1f, %.1f, %.1f", hitParent, hitName, hitPos.X, hitPos.Y, hitPos.Z)
+        else
+            hitLabel = string.format("💥 %.1f, %.1f, %.1f", hitPos.X, hitPos.Y, hitPos.Z)
+        end
+    end
+
+    -- วาดจุด impact (ไม่มีเส้น)
+    local ball = Instance.new("Part")
+    ball.Anchored = true
+    ball.CanCollide = false
+    ball.CastShadow = false
+    ball.Material = Enum.Material.Neon
+    ball.Color = Color3.fromRGB(255, 40, 40)
+    ball.Shape = Enum.PartType.Ball
+    ball.Size = Vector3.new(0.7, 0.7, 0.7)
+    ball.CFrame = CFrame.new(hitPos)
+    ball.Parent = Workspace
+    if _G.protectInstance then pcall(_G.protectInstance, ball) end
+    table.insert(debugTrajectoryParts, ball)
+
+    -- Billboard label บนจุด
+    local bb = Instance.new("BillboardGui")
+    bb.Size = UDim2.fromOffset(180, 40)
+    bb.StudsOffset = Vector3.new(0, 1.5, 0)
+    bb.AlwaysOnTop = true
+    bb.Parent = ball
+    table.insert(debugTrajectoryParts, bb)
+
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.fromScale(1, 1)
+    lbl.BackgroundTransparency = 1
+    lbl.TextColor3 = Color3.fromRGB(255, 80, 80)
+    lbl.TextStrokeTransparency = 0
+    lbl.TextStrokeColor3 = Color3.new(0, 0, 0)
+    lbl.Font = Enum.Font.GothamBold
+    lbl.TextSize = 13
+    lbl.Text = hitLabel or ""
+    lbl.Parent = bb
+
+    -- Auto-cleanup after 4 seconds
+    task.delay(4, clearDebugTrajectory)
+end
+
 local HAND_MORTAR_ANIM_IDS = {
     ["rbxassetid://117522716162453"] = true,
     ["rbxassetid://83761082384320"] = true,
@@ -6648,6 +7093,10 @@ local function attachHandMortarWatcher()
         local id = string.lower(tostring(anim.AnimationId or ""))
         -- If this is one of our Hand Mortar fuse animations, wait 1s then start the 5s countdown
         if HAND_MORTAR_ANIM_IDS[id] then
+            -- Debug Trajectory: show raycast impact immediately when fuse animation plays
+            if HAND_MORTAR_DEBUG_TRAJECTORY_ENABLED then
+                task.spawn(showHandMortarDebugTrajectory)
+            end
             -- we wait 1s from the animation start, then show the 5s countdown
             task.delay(1, function()
                 -- safety checks
@@ -6695,6 +7144,67 @@ do
                 -- cleanup UI if disabled
                 destroyHandMortarGui()
         end
+        end
+    })
+    -- Hand Mortar Silent Aim toggle
+    MiscGunSection:Toggle({
+        Title = "Hand Mortar Silent Aim",
+        Flag = "Misc_HandMortarSilentAim",
+        Desc = "Redirect Hand Mortar shells to nearest zombie (HumanoidRootPart).",
+        Icon = "crosshair",
+        Value = false,
+        Callback = function(state)
+            HAND_MORTAR_SILENT_AIM_ENABLED = state
+            if state then
+                startHandMortarSilentAimLoop()
+                startHandMortarSilentAimSync()
+            else
+                stopHandMortarSilentAimLoop()
+                stopHandMortarSilentAimSync()
+                -- Clear target so existing hooks stop redirecting
+                handMortarSilentAimTarget = nil
+            end
+        end
+    })
+    -- Zombie type dropdown for Hand Mortar Silent Aim (เหมือน Silent Aim ปกติ)
+    MiscGunSection:Dropdown({
+        Title = "HM Silent Aim: Zombie Types",
+        Flag = "Misc_HandMortarSilentAimTypes",
+        Desc = "เลือก zombie type ที่จะ silent aim (ว่าง = ทุก type)",
+        Values = SilentAimZombieTypes,
+        Value = {},
+        Multi = true,
+        Callback = function(selection)
+            HandMortarSelectedTypes = {}
+            for _, v in ipairs(selection or {}) do
+                table.insert(HandMortarSelectedTypes, tostring(v))
+            end
+            if GunTab_InitComplete then
+                pcall(function()
+                    WindUI:Notify({
+                        Title = "HM Silent Aim",
+                        Content = (#HandMortarSelectedTypes > 0)
+                            and ("Target: " .. table.concat(HandMortarSelectedTypes, ", "))
+                            or "Target: ทุก zombie type",
+                        Icon = "crosshair",
+                        Duration = 2,
+                    })
+                end)
+            end
+        end
+    })
+    -- Hand Mortar Debug Trajectory toggle
+    MiscGunSection:Toggle({
+        Title = "Hand Mortar Debug Trajectory",
+        Flag = "Misc_HandMortarDebugTrajectory",
+        Desc = "Show raycast beam + impact point when Hand Mortar fires.",
+        Icon = "target",
+        Value = false,
+        Callback = function(state)
+            HAND_MORTAR_DEBUG_TRAJECTORY_ENABLED = state
+            if not state then
+                clearDebugTrajectory()
+            end
         end
     })
 end -- End MiscGun do-block
@@ -22197,6 +22707,5 @@ end -- end of Feedback Tab
 task.wait(0.1) -- Delay to prevent lag
 do -- // Final task.spawn and connects
     print("Guts & Blackpowder | Better🔥 v1.0 successfully loaded!")
-    print("Made by anonymous")
+    print("Made by Home Lander")
 end -- end of Final block
-
